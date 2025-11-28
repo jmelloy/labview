@@ -112,15 +112,22 @@
   line-height: 1.6;
 }
 
-/* Decorative notebook spiral holes */
+/* Decorative notebook spiral holes using CSS circles */
 .hero::before {
-  content: '○ ○ ○ ○ ○ ○ ○ ○ ○ ○';
+  content: '';
   position: absolute;
   top: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  color: var(--color-border);
-  letter-spacing: 0.5em;
-  font-size: 0.75rem;
+  width: 300px;
+  height: 12px;
+  background-image: radial-gradient(
+    circle at center,
+    var(--color-border) 4px,
+    transparent 4px
+  );
+  background-size: 28px 12px;
+  background-repeat: repeat-x;
+  opacity: 0.8;
 }
 </style>

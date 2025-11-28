@@ -184,6 +184,13 @@ function formatOutput(outputs: Record<string, unknown>): string {
   50% { opacity: 0.85; }
 }
 
+/* Respect user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .cell-block.status-running {
+    animation: none;
+  }
+}
+
 .cell-block.status-completed {
   border-left: 4px solid var(--color-success);
 }

@@ -323,11 +323,11 @@ const entryTypes = [
     linear-gradient(var(--color-margin-line) 0, transparent 0),
     repeating-linear-gradient(
       transparent,
-      transparent 27px,
-      var(--color-page-lines) 27px,
-      var(--color-page-lines) 28px
+      transparent var(--line-height-spacing),
+      var(--color-page-lines) var(--line-height-spacing),
+      var(--color-page-lines) calc(var(--line-height-spacing) + var(--line-stroke-width))
     );
-  background-position: 60px 0, 0 8px;
+  background-position: var(--margin-offset) 0, 0 8px;
   min-height: 100vh;
   box-shadow: var(--shadow-lg);
   position: relative;
@@ -337,10 +337,10 @@ const entryTypes = [
 .notebook-page::before {
   content: '';
   position: absolute;
-  left: 60px;
+  left: var(--margin-offset);
   top: 0;
   bottom: 0;
-  width: 1px;
+  width: var(--line-stroke-width);
   background: var(--color-margin-line);
   opacity: 0.7;
 }

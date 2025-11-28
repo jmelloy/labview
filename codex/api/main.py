@@ -1,7 +1,9 @@
 """FastAPI application for Lab Notebook."""
 
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
+import logging
 
 from fastapi import FastAPI
 
@@ -13,6 +15,12 @@ from codex.api.routes.search import router as search_router
 from codex.api.routes.workspace import router as workspace_router
 from codex.api.utils import DEFAULT_WORKSPACE_PATH
 from codex.core.workspace import Workspace
+
+DEBUG = os.environ.get("DEBUG", "false") == "true"
+if DEBUG:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 
 @asynccontextmanager
@@ -27,10 +35,11 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Lab Notebook API",
+    title="Codex API",
     description="A hierarchical digital laboratory journal system",
     version="0.1.0",
     lifespan=lifespan,
+    debug=DEBUG,
 )
 
 # Include routers

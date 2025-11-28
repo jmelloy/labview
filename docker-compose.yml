@@ -10,7 +10,8 @@ services:
       - ./codex:/app/codex
     environment:
       - CODEX_WORKSPACE_PATH=/data/workspace
-    command: uvicorn codex.api.main:app --host 0.0.0.0 --port 8765 --reload
+      - DEBUG=true
+    command: uvicorn codex.api.main:app --host 0.0.0.0 --port 8765 --reload --debug
     restart: unless-stopped
 
   frontend:

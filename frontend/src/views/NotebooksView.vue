@@ -136,11 +136,21 @@ function closeModal() {
 </template>
 
 <style scoped>
+.notebooks-view {
+  padding: 2rem;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-family: var(--font-handwritten);
+  font-size: 2.5rem;
+  color: var(--color-primary);
 }
 
 .notebooks-grid {
@@ -153,25 +163,31 @@ function closeModal() {
   display: block;
   text-decoration: none;
   color: inherit;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
 }
 
 .notebook-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: rotate(-1deg) translateY(-4px);
+  box-shadow: var(--shadow-lg);
   text-decoration: none;
+}
+
+.notebook-card:nth-child(even):hover {
+  transform: rotate(0.5deg) translateY(-4px);
 }
 
 .notebook-card h3 {
   margin-bottom: 0.5rem;
   color: var(--color-primary);
+  font-family: var(--font-handwritten);
+  font-size: 1.5rem;
 }
 
 .description {
   color: var(--color-text-secondary);
   margin-bottom: 1rem;
+  font-style: italic;
 }
 
 .tags {
@@ -182,8 +198,9 @@ function closeModal() {
 }
 
 .meta {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
+  font-family: var(--font-mono);
 }
 
 .loading,
@@ -192,6 +209,7 @@ function closeModal() {
   text-align: center;
   padding: 3rem;
   color: var(--color-text-secondary);
+  font-style: italic;
 }
 
 .error {
@@ -204,7 +222,7 @@ function closeModal() {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(44, 36, 22, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -212,16 +230,21 @@ function closeModal() {
 }
 
 .modal {
-  background: var(--color-background);
+  background: var(--color-surface);
+  background-image: var(--paper-texture);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 500px;
   box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
 }
 
 .modal h2 {
   margin-bottom: 1.5rem;
+  font-family: var(--font-handwritten);
+  font-size: 1.75rem;
+  color: var(--color-primary);
 }
 
 .form-group {
@@ -232,6 +255,7 @@ function closeModal() {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .form-group input,
@@ -239,8 +263,18 @@ function closeModal() {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
   font-size: 1rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(45, 90, 39, 0.1);
 }
 
 .modal-actions {

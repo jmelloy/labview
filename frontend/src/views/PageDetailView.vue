@@ -317,13 +317,57 @@ const entryTypes = [
 .notebook-page {
   max-width: 900px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 3rem;
+  background: var(--color-surface);
+  background-image: 
+    linear-gradient(var(--color-margin-line) 0, transparent 0),
+    repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      var(--color-page-lines) 27px,
+      var(--color-page-lines) 28px
+    );
+  background-position: 60px 0, 0 8px;
+  min-height: 100vh;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+/* Red margin line */
+.notebook-page::before {
+  content: '';
+  position: absolute;
+  left: 60px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-margin-line);
+  opacity: 0.7;
+}
+
+/* Spiral binding holes indicator */
+.notebook-page::after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 24px,
+    var(--color-border) 24px,
+    var(--color-border) 32px
+  );
+  border-radius: 4px;
 }
 
 .page-header {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 2px solid var(--color-border);
+  margin-left: 30px;
 }
 
 .page-meta {
@@ -336,13 +380,16 @@ const entryTypes = [
 .page-date {
   font-size: 0.875rem;
   color: var(--color-text-secondary);
+  font-family: var(--font-mono);
 }
 
 .page-title {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.25rem;
+  font-weight: 600;
   color: var(--color-text);
   margin: 0;
+  font-family: var(--font-handwritten);
+  letter-spacing: 0.01em;
 }
 
 .tags {
@@ -355,6 +402,7 @@ const entryTypes = [
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  margin-left: 30px;
 }
 
 .notebook-section {
@@ -362,12 +410,13 @@ const entryTypes = [
 }
 
 .section-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   color: var(--color-text-secondary);
   margin-bottom: 0.5rem;
+  font-family: var(--font-mono);
 }
 
 .cells-container {
@@ -418,10 +467,13 @@ const entryTypes = [
 .empty-cells {
   text-align: center;
   padding: 3rem;
-  background: var(--color-background);
+  background: rgba(245, 240, 230, 0.5);
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-lg);
   color: var(--color-text-secondary);
+  font-style: italic;
+  font-family: var(--font-handwritten);
+  font-size: 1.1rem;
 }
 
 .cell-menu-overlay {
@@ -430,7 +482,7 @@ const entryTypes = [
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(44, 36, 22, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -439,16 +491,19 @@ const entryTypes = [
 
 .cell-menu {
   background: var(--color-surface);
+  background-image: var(--paper-texture);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   box-shadow: var(--shadow-lg);
   min-width: 280px;
+  border: 1px solid var(--color-border);
 }
 
 .cell-menu h3 {
   margin-bottom: 1rem;
-  font-size: 1rem;
-  color: var(--color-text);
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  font-family: var(--font-handwritten);
 }
 
 .cell-menu-options {
@@ -469,6 +524,7 @@ const entryTypes = [
   transition: all 0.2s;
   text-align: left;
   font-size: 0.9375rem;
+  font-family: var(--font-body);
 }
 
 .cell-menu-option:hover {
@@ -487,6 +543,7 @@ const entryTypes = [
   justify-content: center;
   height: 50vh;
   color: var(--color-text-secondary);
+  font-style: italic;
 }
 
 .modal-overlay {
@@ -495,7 +552,7 @@ const entryTypes = [
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(44, 36, 22, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -503,21 +560,27 @@ const entryTypes = [
 }
 
 .modal {
-  background: var(--color-background);
+  background: var(--color-surface);
+  background-image: var(--paper-texture);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 500px;
   box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
 }
 
 .modal h2 {
   margin-bottom: 0.5rem;
+  font-family: var(--font-handwritten);
+  font-size: 1.75rem;
+  color: var(--color-primary);
 }
 
 .modal-subtitle {
   color: var(--color-text-secondary);
   margin-bottom: 1.5rem;
+  font-style: italic;
 }
 
 .form-group {
@@ -528,6 +591,7 @@ const entryTypes = [
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .form-group input,
@@ -535,8 +599,18 @@ const entryTypes = [
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 1rem;
+  font-family: var(--font-body);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(45, 90, 39, 0.1);
 }
 
 .modal-actions {

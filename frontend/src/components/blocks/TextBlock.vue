@@ -86,19 +86,21 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 .text-block.editable:hover .text-content {
-  background: var(--color-background);
+  background: rgba(255, 253, 247, 0.7);
   border-radius: var(--radius-sm);
 }
 
 .text-content {
   padding: 0.5rem;
   cursor: text;
-  line-height: 1.6;
+  line-height: 1.7;
+  font-family: var(--font-body);
 }
 
 .text-content.empty {
   color: var(--color-text-secondary);
   font-style: italic;
+  font-family: var(--font-handwritten);
 }
 
 .text-content :deep(h1),
@@ -106,6 +108,8 @@ function handleKeydown(e: KeyboardEvent) {
 .text-content :deep(h3) {
   margin-top: 1rem;
   margin-bottom: 0.5rem;
+  font-family: var(--font-handwritten);
+  color: var(--color-primary);
 }
 
 .text-content :deep(h1:first-child),
@@ -133,6 +137,8 @@ function handleKeydown(e: KeyboardEvent) {
   padding: 0.125rem 0.375rem;
   border-radius: var(--radius-sm);
   font-size: 0.875em;
+  font-family: var(--font-mono);
+  color: var(--color-ink-blue);
 }
 
 .text-content :deep(pre) {
@@ -141,6 +147,7 @@ function handleKeydown(e: KeyboardEvent) {
   border-radius: var(--radius-md);
   overflow-x: auto;
   margin-bottom: 0.75rem;
+  border-left: 3px solid var(--color-primary);
 }
 
 .text-content :deep(pre code) {
@@ -153,6 +160,7 @@ function handleKeydown(e: KeyboardEvent) {
   padding-left: 1rem;
   margin: 0.75rem 0;
   color: var(--color-text-secondary);
+  font-style: italic;
 }
 
 .text-editor {
@@ -161,11 +169,12 @@ function handleKeydown(e: KeyboardEvent) {
   padding: 0.5rem;
   border: 2px solid var(--color-primary);
   border-radius: var(--radius-sm);
-  font-family: inherit;
+  font-family: var(--font-body);
   font-size: inherit;
-  line-height: 1.6;
+  line-height: 1.7;
   resize: none;
   outline: none;
   background: var(--color-surface);
+  color: var(--color-text);
 }
 </style>

@@ -162,18 +162,47 @@ function isPageActive(page: Page) {
 .sidebar {
   width: 260px;
   min-width: 260px;
-  background: var(--color-surface);
+  background: linear-gradient(
+    90deg,
+    var(--color-binding) 0%,
+    #4d3b2f 8px,
+    var(--color-surface) 8px,
+    var(--color-surface) 100%
+  );
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   height: 100vh;
   position: sticky;
   top: 0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Notebook binding rings effect */
+.sidebar::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 20px,
+    #2a1f17 20px,
+    #2a1f17 24px,
+    transparent 24px,
+    transparent 44px
+  );
+  opacity: 0.6;
 }
 
 .sidebar-header {
-  padding: 1rem;
+  padding: 1rem 1rem 1rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  margin-left: 8px;
 }
 
 .logo {
@@ -189,14 +218,18 @@ function isPageActive(page: Page) {
 }
 
 .logo-text {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
+  font-family: var(--font-handwritten);
   color: var(--color-primary);
+  letter-spacing: 0.02em;
 }
 
 .sidebar-search {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem 0.75rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  margin-left: 8px;
 }
 
 .search-link {
@@ -209,26 +242,31 @@ function isPageActive(page: Page) {
   color: var(--color-text-secondary);
   text-decoration: none;
   font-size: 0.875rem;
+  border: 1px dashed var(--color-border);
 }
 
 .search-link:hover {
   background: var(--color-border);
   text-decoration: none;
+  border-style: solid;
 }
 
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
   padding: 0.75rem 0;
+  background: var(--color-surface);
+  margin-left: 8px;
 }
 
 .nav-section-header {
   padding: 0.5rem 1rem;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   color: var(--color-text-secondary);
+  font-family: var(--font-mono);
 }
 
 .tree {
@@ -247,6 +285,7 @@ function isPageActive(page: Page) {
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: background-color 0.15s;
+  font-family: var(--font-body);
 }
 
 .tree-node:hover {
@@ -320,6 +359,8 @@ function isPageActive(page: Page) {
 .sidebar-footer {
   padding: 1rem;
   border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  margin-left: 8px;
 }
 
 .footer-link {
@@ -332,6 +373,7 @@ function isPageActive(page: Page) {
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
+  font-family: var(--font-body);
 }
 
 .footer-link:hover {

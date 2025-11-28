@@ -12,6 +12,19 @@ const notebooksStore = useNotebooksStore();
 const page = ref<Page | null>(null);
 const entries = ref<Entry[]>([]);
 const loading = ref(true);
+const executingEntries = ref<Set<string>>(new Set());
+
+// Variation modal state
+const showVariationModal = ref(false);
+const variationEntry = ref<Entry | null>(null);
+const variationTitle = ref("");
+const creatingVariation = ref(false);
+
+// Lineage modal state
+const showLineageModal = ref(false);
+const lineageEntry = ref<Entry | null>(null);
+const lineageData = ref<{ ancestors: Entry[]; descendants: Entry[]; entry: Entry } | null>(null);
+const loadingLineage = ref(false);
 
 const notebookId = computed(() => route.params.notebookId as string);
 const pageId = computed(() => route.params.pageId as string);
@@ -58,6 +71,86 @@ const createNewEntry = () => {
     `/notebooks/${notebookId.value}/pages/${pageId.value}/entries/new`,
   );
 };
+
+async function executeEntry(entry: Entry) {
+  executingEntries.value.add(entry.id);
+  try {
+    const updated = await entriesApi.execute(notebooksStore.workspacePath, entry.id);
+    const idx = entries.value.findIndex(e => e.id === entry.id);
+    if (idx >= 0) {
+      entries.value[idx] = updated;
+    }
+  } catch (e) {
+    console.error("Failed to execute entry:", e);
+    alert("Failed to execute entry: " + (e instanceof Error ? e.message : "Unknown error"));
+  } finally {
+    executingEntries.value.delete(entry.id);
+  }
+}
+
+function openVariationModal(entry: Entry) {
+  variationEntry.value = entry;
+  variationTitle.value = `${entry.title} - Variation`;
+  showVariationModal.value = true;
+}
+
+async function createVariation() {
+  if (!variationEntry.value || !variationTitle.value.trim()) return;
+
+  creatingVariation.value = true;
+  try {
+    const response = await fetch(`/api/entries/${variationEntry.value.id}/variations`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        workspace_path: notebooksStore.workspacePath,
+        title: variationTitle.value,
+        input_overrides: {},
+        tags: [],
+      }),
+    });
+
+    if (!response.ok) throw new Error("Failed to create variation");
+
+    const newEntry = await response.json();
+    entries.value.push(newEntry);
+    showVariationModal.value = false;
+    variationEntry.value = null;
+    variationTitle.value = "";
+  } catch (e) {
+    console.error("Failed to create variation:", e);
+    alert("Failed to create variation");
+  } finally {
+    creatingVariation.value = false;
+  }
+}
+
+async function openLineageModal(entry: Entry) {
+  lineageEntry.value = entry;
+  showLineageModal.value = true;
+  loadingLineage.value = true;
+
+  try {
+    lineageData.value = await entriesApi.getLineage(notebooksStore.workspacePath, entry.id);
+  } catch (e) {
+    console.error("Failed to load lineage:", e);
+    lineageData.value = null;
+  } finally {
+    loadingLineage.value = false;
+  }
+}
+
+function closeLineageModal() {
+  showLineageModal.value = false;
+  lineageEntry.value = null;
+  lineageData.value = null;
+}
+
+function closeVariationModal() {
+  showVariationModal.value = false;
+  variationEntry.value = null;
+  variationTitle.value = "";
+}
 </script>
 
 <template>
@@ -161,15 +254,94 @@ const createNewEntry = () => {
           </div>
 
           <div class="entry-actions">
-            <button class="btn btn-secondary" v-if="entry.status === 'created'">
-              Execute
+            <button 
+              class="btn btn-secondary" 
+              v-if="entry.status === 'created'"
+              @click="executeEntry(entry)"
+              :disabled="executingEntries.has(entry.id)"
+            >
+              {{ executingEntries.has(entry.id) ? "Executing..." : "Execute" }}
             </button>
-            <button class="btn btn-secondary">Create Variation</button>
-            <button class="btn btn-secondary">View Lineage</button>
+            <button class="btn btn-secondary" @click="openVariationModal(entry)">
+              Create Variation
+            </button>
+            <button class="btn btn-secondary" @click="openLineageModal(entry)">
+              View Lineage
+            </button>
           </div>
         </div>
       </div>
     </section>
+
+    <!-- Variation Modal -->
+    <div v-if="showVariationModal" class="modal-overlay" @click.self="closeVariationModal">
+      <div class="modal">
+        <h2>Create Variation</h2>
+        <p class="modal-subtitle">Based on: {{ variationEntry?.title }}</p>
+        <form @submit.prevent="createVariation">
+          <div class="form-group">
+            <label for="variation-title">Title *</label>
+            <input
+              id="variation-title"
+              v-model="variationTitle"
+              type="text"
+              required
+            />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn" @click="closeVariationModal">Cancel</button>
+            <button type="submit" class="btn btn-primary" :disabled="creatingVariation">
+              {{ creatingVariation ? "Creating..." : "Create Variation" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lineage Modal -->
+    <div v-if="showLineageModal" class="modal-overlay" @click.self="closeLineageModal">
+      <div class="modal modal-wide">
+        <h2>Entry Lineage</h2>
+        <p class="modal-subtitle">{{ lineageEntry?.title }}</p>
+        
+        <div v-if="loadingLineage" class="loading">Loading lineage...</div>
+        
+        <div v-else-if="lineageData" class="lineage-content">
+          <div class="lineage-section" v-if="lineageData.ancestors.length > 0">
+            <h4>Ancestors</h4>
+            <div class="lineage-list">
+              <div v-for="ancestor in lineageData.ancestors" :key="ancestor.id" class="lineage-item">
+                {{ ancestor.title }} <span class="lineage-status">{{ ancestor.status }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="lineage-section lineage-current">
+            <h4>Current Entry</h4>
+            <div class="lineage-item current">
+              {{ lineageData.entry.title }} <span class="lineage-status">{{ lineageData.entry.status }}</span>
+            </div>
+          </div>
+          
+          <div class="lineage-section" v-if="lineageData.descendants.length > 0">
+            <h4>Descendants</h4>
+            <div class="lineage-list">
+              <div v-for="desc in lineageData.descendants" :key="desc.id" class="lineage-item">
+                {{ desc.title }} <span class="lineage-status">{{ desc.status }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="lineageData.ancestors.length === 0 && lineageData.descendants.length === 0" class="empty">
+            No lineage found. This entry has no parent or children.
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn" @click="closeLineageModal">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div v-else-if="loading" class="loading">Loading page...</div>
@@ -325,5 +497,106 @@ const createNewEntry = () => {
   text-align: center;
   padding: 3rem;
   color: var(--color-text-secondary);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--color-background);
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-wide {
+  max-width: 700px;
+}
+
+.modal h2 {
+  margin-bottom: 0.5rem;
+}
+
+.modal-subtitle {
+  color: var(--color-text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.lineage-content {
+  margin: 1rem 0;
+}
+
+.lineage-section {
+  margin-bottom: 1.5rem;
+}
+
+.lineage-section h4 {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.lineage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lineage-item {
+  padding: 0.75rem;
+  background: var(--color-surface);
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lineage-item.current {
+  border: 2px solid var(--color-primary);
+}
+
+.lineage-status {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: var(--color-border);
 }
 </style>

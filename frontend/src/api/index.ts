@@ -59,9 +59,13 @@ export const pagesApi = {
     notebookId: string,
     data: { title: string; date?: string; narrative?: Record<string, string> },
   ) =>
-    fetchJSON<Page>(`/notebooks/${notebookId}/pages`, {
+    fetchJSON<Page>("/pages", {
       method: "POST",
-      body: JSON.stringify({ workspace_path: workspacePath, ...data }),
+      body: JSON.stringify({
+        workspace_path: workspacePath,
+        notebook_id: notebookId,
+        ...data,
+      }),
     }),
 };
 
@@ -88,9 +92,13 @@ export const entriesApi = {
       tags?: string[];
     },
   ) =>
-    fetchJSON<Entry>(`/pages/${pageId}/entries`, {
+    fetchJSON<Entry>("/entries", {
       method: "POST",
-      body: JSON.stringify({ workspace_path: workspacePath, ...data }),
+      body: JSON.stringify({
+        workspace_path: workspacePath,
+        page_id: pageId,
+        ...data,
+      }),
     }),
 
   execute: (workspacePath: string, entryId: string) =>

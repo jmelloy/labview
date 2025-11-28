@@ -170,10 +170,15 @@ function closeModal() {
 </template>
 
 <style scoped>
+.notebook-detail {
+  padding: 2rem;
+}
+
 .back-link {
   color: var(--color-text-secondary);
   display: inline-block;
   margin-bottom: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .page-header {
@@ -183,9 +188,16 @@ function closeModal() {
   margin-bottom: 2rem;
 }
 
+.page-header h1 {
+  font-family: var(--font-handwritten);
+  font-size: 2.5rem;
+  color: var(--color-primary);
+}
+
 .description {
   color: var(--color-text-secondary);
   margin-top: 0.5rem;
+  font-style: italic;
 }
 
 .tags {
@@ -197,6 +209,9 @@ function closeModal() {
 
 .pages-section h2 {
   margin-bottom: 1rem;
+  font-family: var(--font-handwritten);
+  font-size: 1.75rem;
+  color: var(--color-text);
 }
 
 .pages-list {
@@ -209,31 +224,33 @@ function closeModal() {
   display: block;
   text-decoration: none;
   color: inherit;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .page-card:hover {
-  transform: translateX(4px);
+  transform: translateX(6px);
   box-shadow: var(--shadow-md);
   text-decoration: none;
 }
 
 .page-date {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
   margin-bottom: 0.25rem;
+  font-family: var(--font-mono);
 }
 
 .page-card h3 {
   color: var(--color-primary);
   margin-bottom: 0.5rem;
+  font-family: var(--font-handwritten);
+  font-size: 1.4rem;
 }
 
 .goals {
   color: var(--color-text-secondary);
   margin-bottom: 0.75rem;
+  font-style: italic;
 }
 
 .loading,
@@ -241,6 +258,7 @@ function closeModal() {
   text-align: center;
   padding: 3rem;
   color: var(--color-text-secondary);
+  font-style: italic;
 }
 
 .modal-overlay {
@@ -249,7 +267,7 @@ function closeModal() {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(44, 36, 22, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -257,16 +275,21 @@ function closeModal() {
 }
 
 .modal {
-  background: var(--color-background);
+  background: var(--color-surface);
+  background-image: var(--paper-texture);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 500px;
   box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
 }
 
 .modal h2 {
   margin-bottom: 1.5rem;
+  font-family: var(--font-handwritten);
+  font-size: 1.75rem;
+  color: var(--color-primary);
 }
 
 .form-group {
@@ -277,6 +300,7 @@ function closeModal() {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .form-group input,
@@ -284,8 +308,18 @@ function closeModal() {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 1rem;
+  font-family: var(--font-body);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(45, 90, 39, 0.1);
 }
 
 .modal-actions {

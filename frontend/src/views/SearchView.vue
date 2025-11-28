@@ -113,8 +113,18 @@ const getStatusClass = (status: string) => {
 </template>
 
 <style scoped>
+.search-view {
+  padding: 2rem;
+}
+
 .page-header {
   margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-family: var(--font-handwritten);
+  font-size: 2.5rem;
+  color: var(--color-primary);
 }
 
 .search-form {
@@ -145,17 +155,22 @@ const getStatusClass = (status: string) => {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: 1rem;
+  font-family: var(--font-body);
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .field input:focus,
 .field select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 2px rgba(45, 90, 39, 0.1);
 }
 
 .results-section h2 {
   margin-bottom: 1rem;
+  font-family: var(--font-handwritten);
+  color: var(--color-primary);
 }
 
 .results-list {
@@ -165,13 +180,12 @@ const getStatusClass = (status: string) => {
 }
 
 .result-card {
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .result-card:hover {
   box-shadow: var(--shadow-md);
+  transform: translateX(4px);
 }
 
 .result-header {
@@ -182,48 +196,54 @@ const getStatusClass = (status: string) => {
 }
 
 .entry-type {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   color: var(--color-text-secondary);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  font-family: var(--font-mono);
 }
 
 .result-header h3 {
   margin-top: 0.25rem;
+  font-family: var(--font-handwritten);
+  font-size: 1.25rem;
 }
 
 .entry-status {
   padding: 0.25rem 0.75rem;
   border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
 }
 
 .status-created {
-  background: #e0e7ff;
-  color: #4338ca;
+  background: #e8f0e3;
+  color: var(--color-primary);
 }
 
 .status-running {
-  background: #fef3c7;
-  color: #b45309;
+  background: #fef3cd;
+  color: var(--color-warning);
 }
 
 .status-completed {
-  background: #dcfce7;
-  color: #15803d;
+  background: #e8f5e3;
+  color: var(--color-success);
 }
 
 .status-failed {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #fbe8e8;
+  color: var(--color-error);
 }
 
 .result-meta {
   display: flex;
   gap: 1.5rem;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: var(--color-text-secondary);
+  font-family: var(--font-mono);
 }
 
 .tags {
@@ -237,5 +257,6 @@ const getStatusClass = (status: string) => {
   text-align: center;
   padding: 3rem;
   color: var(--color-text-secondary);
+  font-style: italic;
 }
 </style>

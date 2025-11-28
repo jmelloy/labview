@@ -167,22 +167,36 @@ function formatOutput(outputs: Record<string, unknown>): string {
   border-radius: var(--radius-md);
   overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
+  position: relative;
 }
 
 .cell-block:hover {
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
 }
 
 .cell-block.status-running {
-  border-color: #f59e0b;
+  border-color: var(--color-warning);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* Respect user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .cell-block.status-running {
+    animation: none;
+  }
 }
 
 .cell-block.status-completed {
-  border-left: 3px solid #22c55e;
+  border-left: 4px solid var(--color-success);
 }
 
 .cell-block.status-failed {
-  border-left: 3px solid #ef4444;
+  border-left: 4px solid var(--color-error);
 }
 
 .cell-header {
@@ -190,13 +204,14 @@ function formatOutput(outputs: Record<string, unknown>): string {
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  background: var(--color-background);
+  background: linear-gradient(to bottom, var(--color-background), rgba(245, 240, 230, 0.5));
   cursor: pointer;
   user-select: none;
+  border-bottom: 1px dashed var(--color-border);
 }
 
 .cell-header:hover {
-  background: var(--color-border);
+  background: var(--color-background);
 }
 
 .cell-info {
@@ -212,11 +227,12 @@ function formatOutput(outputs: Record<string, unknown>): string {
 .cell-title {
   font-weight: 500;
   color: var(--color-text);
+  font-family: var(--font-body);
 }
 
 .cell-id {
-  font-family: monospace;
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
   color: var(--color-text-secondary);
   background: var(--color-border);
   padding: 0.125rem 0.375rem;
@@ -230,32 +246,33 @@ function formatOutput(outputs: Record<string, unknown>): string {
 }
 
 .cell-status {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.7rem;
+  font-weight: 600;
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
   text-transform: uppercase;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
 }
 
 .status-created {
-  background: #e0e7ff;
-  color: #4338ca;
+  background: #e8f0e3;
+  color: var(--color-primary);
 }
 
 .status-running {
-  background: #fef3c7;
-  color: #b45309;
+  background: #fef3cd;
+  color: var(--color-warning);
 }
 
 .status-completed {
-  background: #dcfce7;
-  color: #15803d;
+  background: #e8f5e3;
+  color: var(--color-success);
 }
 
 .status-failed {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #fbe8e8;
+  color: var(--color-error);
 }
 
 .cell-expand {
@@ -265,7 +282,7 @@ function formatOutput(outputs: Record<string, unknown>): string {
 
 .cell-body {
   padding: 1rem;
-  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .cell-section {
@@ -284,11 +301,12 @@ function formatOutput(outputs: Record<string, unknown>): string {
 }
 
 .cell-section h4 {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   color: var(--color-text-secondary);
+  font-family: var(--font-mono);
 }
 
 .btn-icon {
@@ -308,23 +326,24 @@ function formatOutput(outputs: Record<string, unknown>): string {
   background: var(--color-background);
   padding: 0.75rem;
   border-radius: var(--radius-sm);
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
   line-height: 1.5;
   overflow-x: auto;
   white-space: pre-wrap;
   word-break: break-word;
+  border-left: 3px solid var(--color-border);
 }
 
 .output-block {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: #f5faf3;
+  border-left-color: var(--color-success);
 }
 
 .error-block {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
+  background: #fdf5f5;
+  border-left-color: var(--color-error);
+  color: var(--color-error);
 }
 
 .meta-section {
@@ -337,6 +356,7 @@ function formatOutput(outputs: Record<string, unknown>): string {
 .meta-item {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
+  font-family: var(--font-mono);
 }
 
 .cell-actions {
@@ -344,7 +364,7 @@ function formatOutput(outputs: Record<string, unknown>): string {
   gap: 0.5rem;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px dashed var(--color-border);
 }
 
 .edit-form {
@@ -353,13 +373,14 @@ function formatOutput(outputs: Record<string, unknown>): string {
 
 .json-editor {
   width: 100%;
-  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
   padding: 0.75rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-background);
   resize: vertical;
+  color: var(--color-text);
 }
 
 .edit-actions {
@@ -370,12 +391,12 @@ function formatOutput(outputs: Record<string, unknown>): string {
 }
 
 .btn-danger {
-  background: #fee2e2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
+  background: #fbe8e8;
+  color: var(--color-error);
+  border: 1px solid #e8c4c4;
 }
 
 .btn-danger:hover {
-  background: #fecaca;
+  background: #f5d5d5;
 }
 </style>

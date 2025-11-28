@@ -81,7 +81,7 @@ class DatabaseQueryIntegration(IntegrationBase):
         try:
             engine = create_engine(connection_string)
 
-            with engine.connect() as conn:
+            with engine.begin() as conn:
                 # Execute query with parameters
                 if parameters:
                     if isinstance(parameters, list):
@@ -109,7 +109,6 @@ class DatabaseQueryIntegration(IntegrationBase):
                     results = []
                     row_count = 0
                     affected_rows = result.rowcount
-                    conn.commit()
 
                 # Create output data
                 output_data = {

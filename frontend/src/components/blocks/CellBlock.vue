@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { marked } from "marked";
+import DOMPurify from "dompurify";
 import type { Entry } from "@/types";
 
 const props = defineProps<{
@@ -38,6 +39,12 @@ const textContent = computed(() => {
     return props.entry.inputs.content as string;
   }
   return "";
+});
+
+const sanitizedTextContent = computed(() => {
+  if (!textContent.value) return "";
+  const rawHtml = marked(textContent.value) as string;
+  return DOMPurify.sanitize(rawHtml);
 });
 
 const statusClass = computed(() => {
@@ -99,7 +106,7 @@ function formatOutput(outputs: Record<string, unknown>): string {
     <div v-if="isExpanded" class="cell-body">
       <!-- Text entry: show content as rendered markdown -->
       <div v-if="isTextEntry" class="cell-section text-content-section">
-        <div class="text-content-rendered" v-html="marked(textContent || '')"></div>
+        <div class="text-content-rendered" v-html="sanitizedTextContent"></div>
       </div>
 
       <!-- Non-text entries: show inputs/outputs as before -->

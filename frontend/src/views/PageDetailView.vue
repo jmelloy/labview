@@ -164,6 +164,7 @@ async function saveInlineTextCell() {
   }
 
   const title = newTextCellTitle.value.trim() || "Untitled";
+  const insertPosition = newCellPosition.value ?? entries.value.length;
   
   try {
     const newEntry = await entriesApi.create(
@@ -178,7 +179,8 @@ async function saveInlineTextCell() {
         tags: [],
       }
     );
-    entries.value.push(newEntry);
+    // Insert at the specified position instead of appending
+    entries.value.splice(insertPosition, 0, newEntry);
     cancelInlineTextCell();
   } catch (e) {
     console.error("Failed to create cell:", e);
@@ -259,52 +261,9 @@ const entryTypes = [
 
       <!-- Entries (Cells) - Notion-like layout -->
       <div class="cells-container">
-        <!-- Inline text cell creation at top -->
-        <div v-if="isCreatingTextCell && newCellPosition === 0" class="inline-cell-creator">
-          <input
-            ref="newTextCellInputRef"
-            v-model="newTextCellTitle"
-            type="text"
-            class="inline-title-input"
-            placeholder="Title (optional)"
-            @keydown.enter.prevent="saveInlineTextCell"
-            @keydown.escape="cancelInlineTextCell"
-          />
-          <textarea
-            v-model="newTextCellContent"
-            class="inline-content-input"
-            placeholder="Start typing your content..."
-            rows="3"
-            @keydown.escape="cancelInlineTextCell"
-          ></textarea>
-          <div class="inline-cell-actions">
-            <button class="btn btn-sm" @click="cancelInlineTextCell">Cancel</button>
-            <button class="btn btn-sm btn-primary" @click="saveInlineTextCell">Save</button>
-          </div>
-        </div>
-
-        <!-- Add Cell Button (before entries) -->
-        <div v-if="!isCreatingTextCell || newCellPosition !== 0" class="add-cell-row">
-          <button class="add-cell-btn" @click="startInlineTextCell(0)" title="Add text cell">
-            <span class="add-icon">+</span>
-            <span>Add</span>
-          </button>
-          <button class="add-cell-menu-btn" @click="showAddCell(0)" title="More cell types">
-            <span>▾</span>
-          </button>
-        </div>
-
-        <template v-for="(entry, index) in entries" :key="entry.id">
-          <CellBlock
-            :entry="entry"
-            :executing="executingEntries.has(entry.id)"
-            @execute="executeEntry(entry)"
-            @delete="deleteEntry(entry)"
-            @create-variation="openVariationModal(entry)"
-          />
-
-          <!-- Inline text cell creation after entry -->
-          <div v-if="isCreatingTextCell && newCellPosition === index + 1" class="inline-cell-creator">
+        <!-- Position 0: Add cell or inline creator -->
+        <template v-if="isCreatingTextCell && newCellPosition === 0">
+          <div class="inline-cell-creator">
             <input
               ref="newTextCellInputRef"
               v-model="newTextCellTitle"
@@ -326,16 +285,63 @@ const entryTypes = [
               <button class="btn btn-sm btn-primary" @click="saveInlineTextCell">Save</button>
             </div>
           </div>
-
-          <!-- Add Cell Button after each entry -->
-          <div v-if="!isCreatingTextCell || newCellPosition !== index + 1" class="add-cell-row">
-            <button class="add-cell-btn" @click="startInlineTextCell(index + 1)" title="Add text cell">
+        </template>
+        <template v-else>
+          <div class="add-cell-row">
+            <button class="add-cell-btn" @click="startInlineTextCell(0)" title="Add text cell">
               <span class="add-icon">+</span>
+              <span>Add</span>
             </button>
-            <button class="add-cell-menu-btn" @click="showAddCell(index + 1)" title="More cell types">
+            <button class="add-cell-menu-btn" @click="showAddCell(0)" title="More cell types">
               <span>▾</span>
             </button>
           </div>
+        </template>
+
+        <template v-for="(entry, index) in entries" :key="entry.id">
+          <CellBlock
+            :entry="entry"
+            :executing="executingEntries.has(entry.id)"
+            @execute="executeEntry(entry)"
+            @delete="deleteEntry(entry)"
+            @create-variation="openVariationModal(entry)"
+          />
+
+          <!-- Position after entry: Add cell or inline creator -->
+          <template v-if="isCreatingTextCell && newCellPosition === index + 1">
+            <div class="inline-cell-creator">
+              <input
+                ref="newTextCellInputRef"
+                v-model="newTextCellTitle"
+                type="text"
+                class="inline-title-input"
+                placeholder="Title (optional)"
+                @keydown.enter.prevent="saveInlineTextCell"
+                @keydown.escape="cancelInlineTextCell"
+              />
+              <textarea
+                v-model="newTextCellContent"
+                class="inline-content-input"
+                placeholder="Start typing your content..."
+                rows="3"
+                @keydown.escape="cancelInlineTextCell"
+              ></textarea>
+              <div class="inline-cell-actions">
+                <button class="btn btn-sm" @click="cancelInlineTextCell">Cancel</button>
+                <button class="btn btn-sm btn-primary" @click="saveInlineTextCell">Save</button>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="add-cell-row">
+              <button class="add-cell-btn" @click="startInlineTextCell(index + 1)" title="Add text cell">
+                <span class="add-icon">+</span>
+              </button>
+              <button class="add-cell-menu-btn" @click="showAddCell(index + 1)" title="More cell types">
+                <span>▾</span>
+              </button>
+            </div>
+          </template>
         </template>
 
         <div v-if="entries.length === 0 && !isCreatingTextCell" class="empty-cells">

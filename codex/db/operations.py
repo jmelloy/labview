@@ -85,7 +85,9 @@ class DatabaseManager:
         """Get a notebook by ID."""
         session = self.get_session()
         try:
-            notebook = session.query(Notebook).filter(Notebook.id == notebook_id).first()
+            notebook = (
+                session.query(Notebook).filter(Notebook.id == notebook_id).first()
+            )
             if notebook:
                 return self._notebook_to_dict(notebook)
             return None
@@ -96,7 +98,9 @@ class DatabaseManager:
         """List all notebooks."""
         session = self.get_session()
         try:
-            notebooks = session.query(Notebook).order_by(Notebook.created_at.desc()).all()
+            notebooks = (
+                session.query(Notebook).order_by(Notebook.created_at.desc()).all()
+            )
             return [self._notebook_to_dict(nb) for nb in notebooks]
         finally:
             session.close()
@@ -105,7 +109,9 @@ class DatabaseManager:
         """Update a notebook."""
         session = self.get_session()
         try:
-            notebook = session.query(Notebook).filter(Notebook.id == notebook_id).first()
+            notebook = (
+                session.query(Notebook).filter(Notebook.id == notebook_id).first()
+            )
             if notebook:
                 if "title" in data:
                     notebook.title = data["title"]
@@ -126,7 +132,9 @@ class DatabaseManager:
         """Delete a notebook."""
         session = self.get_session()
         try:
-            notebook = session.query(Notebook).filter(Notebook.id == notebook_id).first()
+            notebook = (
+                session.query(Notebook).filter(Notebook.id == notebook_id).first()
+            )
             if notebook:
                 session.delete(notebook)
                 session.commit()
@@ -144,7 +152,11 @@ class DatabaseManager:
                 id=page_data["id"],
                 notebook_id=page_data["notebook_id"],
                 title=page_data["title"],
-                date=_parse_datetime(page_data.get("date")) if page_data.get("date") else None,
+                date=(
+                    _parse_datetime(page_data.get("date"))
+                    if page_data.get("date")
+                    else None
+                ),
                 created_at=_parse_datetime(page_data.get("created_at")),
                 updated_at=_parse_datetime(page_data.get("updated_at")),
                 narrative=json.dumps(page_data.get("narrative", {})),
@@ -355,9 +367,7 @@ class DatabaseManager:
                 parent_ids = [lineage.parent_id for lineage in lineages]
                 if parent_ids:
                     entries = (
-                        session.query(Entry)
-                        .filter(Entry.id.in_(parent_ids))
-                        .all()
+                        session.query(Entry).filter(Entry.id.in_(parent_ids)).all()
                     )
                     ancestors.extend([self._entry_to_dict(e) for e in entries])
                     current_ids = parent_ids
@@ -387,11 +397,7 @@ class DatabaseManager:
 
                 child_ids = [lineage.child_id for lineage in lineages]
                 if child_ids:
-                    entries = (
-                        session.query(Entry)
-                        .filter(Entry.id.in_(child_ids))
-                        .all()
-                    )
+                    entries = session.query(Entry).filter(Entry.id.in_(child_ids)).all()
                     descendants.extend([self._entry_to_dict(e) for e in entries])
                     current_ids = child_ids
                 else:
@@ -430,7 +436,9 @@ class DatabaseManager:
         """Get an artifact by ID."""
         session = self.get_session()
         try:
-            artifact = session.query(Artifact).filter(Artifact.id == artifact_id).first()
+            artifact = (
+                session.query(Artifact).filter(Artifact.id == artifact_id).first()
+            )
             if artifact:
                 return self._artifact_to_dict(artifact)
             return None
@@ -441,7 +449,9 @@ class DatabaseManager:
         """Get an artifact by hash."""
         session = self.get_session()
         try:
-            artifact = session.query(Artifact).filter(Artifact.hash == hash_value).first()
+            artifact = (
+                session.query(Artifact).filter(Artifact.hash == hash_value).first()
+            )
             if artifact:
                 return self._artifact_to_dict(artifact)
             return None
@@ -470,7 +480,9 @@ class DatabaseManager:
             query = session.query(Entry)
 
             if filters.get("notebook_id"):
-                query = query.join(Page).filter(Page.notebook_id == filters["notebook_id"])
+                query = query.join(Page).filter(
+                    Page.notebook_id == filters["notebook_id"]
+                )
 
             if filters.get("page_id"):
                 query = query.filter(Entry.page_id == filters["page_id"])
@@ -505,8 +517,12 @@ class DatabaseManager:
             "id": notebook.id,
             "title": notebook.title,
             "description": notebook.description,
-            "created_at": notebook.created_at.isoformat() if notebook.created_at else None,
-            "updated_at": notebook.updated_at.isoformat() if notebook.updated_at else None,
+            "created_at": (
+                notebook.created_at.isoformat() if notebook.created_at else None
+            ),
+            "updated_at": (
+                notebook.updated_at.isoformat() if notebook.updated_at else None
+            ),
             "settings": json.loads(notebook.settings) if notebook.settings else {},
             "metadata": json.loads(notebook.metadata_) if notebook.metadata_ else {},
             "tags": [nt.tag.name for nt in notebook.tags] if notebook.tags else [],
@@ -554,7 +570,9 @@ class DatabaseManager:
             "size_bytes": artifact.size_bytes,
             "path": artifact.path,
             "thumbnail_path": artifact.thumbnail_path,
-            "created_at": artifact.created_at.isoformat() if artifact.created_at else None,
+            "created_at": (
+                artifact.created_at.isoformat() if artifact.created_at else None
+            ),
             "archived": artifact.archived,
             "archive_strategy": artifact.archive_strategy,
             "original_size_bytes": artifact.original_size_bytes,

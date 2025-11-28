@@ -95,7 +95,9 @@ class APICallIntegration(IntegrationBase):
                                 "data": artifact_data.encode("utf-8"),
                                 "metadata": {
                                     "status_code": response.status,
-                                    "content_type": response.headers.get("Content-Type"),
+                                    "content_type": response.headers.get(
+                                        "Content-Type"
+                                    ),
                                 },
                             }
                         ],

@@ -1,13 +1,13 @@
 """Artifacts API routes."""
 
 import io
-from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from codex.api.utils import get_workspace_path
 from codex.core.workspace import Workspace
 
 router = APIRouter()
@@ -15,15 +15,16 @@ router = APIRouter()
 
 class ArtifactUploadRequest(BaseModel):
     """Request model for uploading an artifact."""
-    workspace_path: str
+
+    workspace_path: Optional[str] = None
     entry_id: str
     metadata: Optional[str] = None
 
 
 @router.post("")
 async def upload_artifact(
-    workspace_path: str,
-    entry_id: str,
+    workspace_path: Optional[str] = None,
+    entry_id: str = Query(...),
     file: UploadFile = File(...),
     metadata: Optional[str] = None,
 ):
@@ -31,9 +32,10 @@ async def upload_artifact(
     import json
 
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
 
         from codex.core.entry import Entry
+
         entry_data = ws.db_manager.get_entry(entry_id)
         if not entry_data:
             raise HTTPException(status_code=404, detail="Entry not found")
@@ -61,12 +63,12 @@ async def upload_artifact(
 @router.get("/{artifact_hash}")
 async def get_artifact(
     artifact_hash: str,
-    workspace_path: str = Query(...),
+    workspace_path: Optional[str] = Query(None),
     thumbnail: bool = Query(default=False),
 ):
     """Retrieve artifact by hash."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
 
         if thumbnail:
             data = ws.storage_manager.get_thumbnail(artifact_hash)
@@ -96,11 +98,11 @@ async def get_artifact(
 @router.get("/{artifact_hash}/info")
 async def get_artifact_info(
     artifact_hash: str,
-    workspace_path: str = Query(...),
+    workspace_path: Optional[str] = Query(None),
 ):
     """Get artifact metadata."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
 
         artifact = ws.db_manager.get_artifact_by_hash(artifact_hash)
         if not artifact:

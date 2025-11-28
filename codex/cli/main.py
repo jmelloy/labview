@@ -166,12 +166,15 @@ def entry():
 @click.option("--param", "-P", multiple=True, help="Input parameters (key=value)")
 @click.option("--execute", "-x", is_flag=True, help="Execute immediately")
 @click.option("--workspace", "-w", default=".", help="Workspace path")
-def entry_create(entry_type: str, page: str, title: str, param: tuple, execute: bool, workspace: str):
+def entry_create(
+    entry_type: str, page: str, title: str, param: tuple, execute: bool, workspace: str
+):
     """Create a new entry."""
     try:
         ws = Workspace.load(Path(workspace).resolve())
 
         from codex.core.page import Page
+
         page_data = ws.db_manager.get_page(page)
         if not page_data:
             click.echo(f"Page not found: {page}", err=True)
@@ -201,6 +204,7 @@ def entry_create(entry_type: str, page: str, title: str, param: tuple, execute: 
 
         if execute:
             import asyncio
+
             click.echo("Executing entry...")
             asyncio.run(e.execute())
             click.echo(f"  Status: {e.status}")
@@ -218,6 +222,7 @@ def entry_list(page: str, workspace: str):
         ws = Workspace.load(Path(workspace).resolve())
 
         from codex.core.page import Page
+
         page_data = ws.db_manager.get_page(page)
         if not page_data:
             click.echo(f"Page not found: {page}", err=True)
@@ -249,6 +254,7 @@ def entry_variation(entry_id: str, title: str, override: tuple, workspace: str):
         ws = Workspace.load(Path(workspace).resolve())
 
         from codex.core.entry import Entry
+
         entry_data = ws.db_manager.get_entry(entry_id)
         if not entry_data:
             click.echo(f"Entry not found: {entry_id}", err=True)
@@ -312,6 +318,7 @@ def lineage(entry_id: str, depth: int, workspace: str):
         ws = Workspace.load(Path(workspace).resolve())
 
         from codex.core.entry import Entry
+
         entry_data = ws.db_manager.get_entry(entry_id)
         if not entry_data:
             click.echo(f"Entry not found: {entry_id}", err=True)

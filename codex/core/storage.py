@@ -68,7 +68,12 @@ class StorageManager:
         if hash_value.startswith("sha256:"):
             hash_value = hash_value[7:]
 
-        thumb_path = self.thumbnails_path / hash_value[:2] / hash_value[2:4] / f"{hash_value}.thumb.jpg"
+        thumb_path = (
+            self.thumbnails_path
+            / hash_value[:2]
+            / hash_value[2:4]
+            / f"{hash_value}.thumb.jpg"
+        )
         if thumb_path.exists():
             return thumb_path.read_bytes()
         return None
@@ -77,9 +82,16 @@ class StorageManager:
         """Get the path to a thumbnail."""
         if hash_value.startswith("sha256:"):
             hash_value = hash_value[7:]
-        return self.thumbnails_path / hash_value[:2] / hash_value[2:4] / f"{hash_value}.thumb.jpg"
+        return (
+            self.thumbnails_path
+            / hash_value[:2]
+            / hash_value[2:4]
+            / f"{hash_value}.thumb.jpg"
+        )
 
-    def _generate_thumbnail(self, data: bytes, hash_value: str, max_size: tuple = (256, 256)):
+    def _generate_thumbnail(
+        self, data: bytes, hash_value: str, max_size: tuple = (256, 256)
+    ):
         """Generate a thumbnail for an image."""
         try:
             # Create subdirectories
@@ -119,7 +131,12 @@ class StorageManager:
             blob_path.unlink()
             deleted = True
 
-        thumb_path = self.thumbnails_path / hash_value[:2] / hash_value[2:4] / f"{hash_value}.thumb.jpg"
+        thumb_path = (
+            self.thumbnails_path
+            / hash_value[:2]
+            / hash_value[2:4]
+            / f"{hash_value}.thumb.jpg"
+        )
         if thumb_path.exists():
             thumb_path.unlink()
 

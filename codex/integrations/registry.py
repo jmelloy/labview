@@ -13,9 +13,11 @@ class IntegrationRegistry:
     @classmethod
     def register(cls, entry_type: str):
         """Decorator to register integration."""
+
         def decorator(integration_class: Type[IntegrationBase]):
             cls._integrations[entry_type] = integration_class
             return integration_class
+
         return decorator
 
     @classmethod

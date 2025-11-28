@@ -69,9 +69,7 @@ class GraphQLIntegration(IntegrationBase):
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    url, headers=headers, json=payload
-                ) as response:
+                async with session.post(url, headers=headers, json=payload) as response:
                     response_text = await response.text()
                     duration = time.time() - start_time
 
@@ -118,7 +116,9 @@ class GraphQLIntegration(IntegrationBase):
                                 "metadata": {
                                     "status_code": response.status,
                                     "has_errors": has_errors,
-                                    "content_type": response.headers.get("Content-Type"),
+                                    "content_type": response.headers.get(
+                                        "Content-Type"
+                                    ),
                                 },
                             }
                         ],

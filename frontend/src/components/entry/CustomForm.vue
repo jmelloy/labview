@@ -1,49 +1,49 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits, defineProps } from 'vue'
+import { ref, computed, defineEmits, defineProps } from "vue";
 
 const props = defineProps<{
   modelValue?: {
-    description?: string
-    notes?: string
-    outputs?: Record<string, unknown>
-  }
-}>()
+    description?: string;
+    notes?: string;
+    outputs?: Record<string, unknown>;
+  };
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: Record<string, unknown>): void
-}>()
+  (e: "update:modelValue", value: Record<string, unknown>): void;
+}>();
 
-const description = ref(props.modelValue?.description || '')
-const notes = ref(props.modelValue?.notes || '')
+const description = ref(props.modelValue?.description || "");
+const notes = ref(props.modelValue?.notes || "");
 const outputsJson = ref(
   props.modelValue?.outputs
     ? JSON.stringify(props.modelValue.outputs, null, 2)
-    : ''
-)
+    : "",
+);
 
-const outputsError = ref('')
+const outputsError = ref("");
 
 const inputs = computed(() => {
   const result: Record<string, unknown> = {
     description: description.value,
     notes: notes.value,
-  }
+  };
 
   if (outputsJson.value.trim()) {
     try {
-      result.outputs = JSON.parse(outputsJson.value)
-      outputsError.value = ''
+      result.outputs = JSON.parse(outputsJson.value);
+      outputsError.value = "";
     } catch {
-      outputsError.value = 'Invalid JSON'
+      outputsError.value = "Invalid JSON";
     }
   }
 
-  return result
-})
+  return result;
+});
 
 const updateValue = () => {
-  emit('update:modelValue', inputs.value)
-}
+  emit("update:modelValue", inputs.value);
+};
 </script>
 
 <template>

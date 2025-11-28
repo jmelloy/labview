@@ -82,11 +82,15 @@ class GitManager:
         (pages_dir / ".gitkeep").touch()
 
         # Commit
-        self.repo.index.add([
-            str(meta_path.relative_to(self.git_path)),
-            str((pages_dir / ".gitkeep").relative_to(self.git_path)),
-        ])
-        self.repo.index.commit(f"Create notebook: {notebook_data.get('title', notebook_id)}")
+        self.repo.index.add(
+            [
+                str(meta_path.relative_to(self.git_path)),
+                str((pages_dir / ".gitkeep").relative_to(self.git_path)),
+            ]
+        )
+        self.repo.index.commit(
+            f"Create notebook: {notebook_data.get('title', notebook_id)}"
+        )
 
     def update_notebook(self, notebook_id: str, notebook_data: dict):
         """Update a notebook in Git."""
@@ -99,7 +103,9 @@ class GitManager:
                 json.dump(notebook_data, f, indent=2, default=str)
 
             self.repo.index.add([str(meta_path.relative_to(self.git_path))])
-            self.repo.index.commit(f"Update notebook: {notebook_data.get('title', notebook_id)}")
+            self.repo.index.commit(
+                f"Update notebook: {notebook_data.get('title', notebook_id)}"
+            )
 
     def delete_notebook(self, notebook_id: str):
         """Delete a notebook from Git."""
@@ -134,10 +140,12 @@ class GitManager:
         (entries_dir / ".gitkeep").touch()
 
         # Commit
-        self.repo.index.add([
-            str(meta_path.relative_to(self.git_path)),
-            str((entries_dir / ".gitkeep").relative_to(self.git_path)),
-        ])
+        self.repo.index.add(
+            [
+                str(meta_path.relative_to(self.git_path)),
+                str((entries_dir / ".gitkeep").relative_to(self.git_path)),
+            ]
+        )
         self.repo.index.commit(f"Create page: {page_data.get('title', page_id)}")
 
     def update_page(self, notebook_id: str, page_id: str, page_data: dict):
@@ -145,7 +153,9 @@ class GitManager:
         if not GIT_AVAILABLE or not self.repo:
             return
 
-        meta_path = self.git_path / "notebooks" / notebook_id / "pages" / page_id / "meta.json"
+        meta_path = (
+            self.git_path / "notebooks" / notebook_id / "pages" / page_id / "meta.json"
+        )
         if meta_path.exists():
             with open(meta_path, "w") as f:
                 json.dump(page_data, f, indent=2, default=str)
@@ -166,13 +176,21 @@ class GitManager:
 
             self.repo.index.commit(f"Delete page: {page_id}")
 
-    def commit_entry(self, notebook_id: str, page_id: str, entry_id: str, entry_data: dict):
+    def commit_entry(
+        self, notebook_id: str, page_id: str, entry_id: str, entry_data: dict
+    ):
         """Commit an entry to Git."""
         if not GIT_AVAILABLE or not self.repo:
             return
 
         entry_path = (
-            self.git_path / "notebooks" / notebook_id / "pages" / page_id / "entries" / f"{entry_id}.json"
+            self.git_path
+            / "notebooks"
+            / notebook_id
+            / "pages"
+            / page_id
+            / "entries"
+            / f"{entry_id}.json"
         )
         entry_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -182,13 +200,21 @@ class GitManager:
         self.repo.index.add([str(entry_path.relative_to(self.git_path))])
         self.repo.index.commit(f"Add entry: {entry_data.get('title', entry_id)}")
 
-    def update_entry(self, notebook_id: str, page_id: str, entry_id: str, entry_data: dict):
+    def update_entry(
+        self, notebook_id: str, page_id: str, entry_id: str, entry_data: dict
+    ):
         """Update an entry in Git."""
         if not GIT_AVAILABLE or not self.repo:
             return
 
         entry_path = (
-            self.git_path / "notebooks" / notebook_id / "pages" / page_id / "entries" / f"{entry_id}.json"
+            self.git_path
+            / "notebooks"
+            / notebook_id
+            / "pages"
+            / page_id
+            / "entries"
+            / f"{entry_id}.json"
         )
 
         if entry_path.exists():
@@ -204,7 +230,13 @@ class GitManager:
             return
 
         entry_path = (
-            self.git_path / "notebooks" / notebook_id / "pages" / page_id / "entries" / f"{entry_id}.json"
+            self.git_path
+            / "notebooks"
+            / notebook_id
+            / "pages"
+            / page_id
+            / "entries"
+            / f"{entry_id}.json"
         )
 
         if entry_path.exists():

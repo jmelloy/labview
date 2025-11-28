@@ -1,46 +1,48 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useNotebooksStore } from '@/stores/notebooks'
-import { searchApi } from '@/api'
-import type { Entry } from '@/types'
+import { ref } from "vue";
+import { useNotebooksStore } from "@/stores/notebooks";
+import { searchApi } from "@/api";
+import type { Entry } from "@/types";
 
-const notebooksStore = useNotebooksStore()
+const notebooksStore = useNotebooksStore();
 
-const query = ref('')
-const entryType = ref('')
-const results = ref<Entry[]>([])
-const loading = ref(false)
-const searched = ref(false)
+const query = ref("");
+const entryType = ref("");
+const results = ref<Entry[]>([]);
+const loading = ref(false);
+const searched = ref(false);
 
-const entryTypes = ['custom', 'api_call', 'comfyui_workflow', 'database_query']
+const entryTypes = ["custom", "api_call", "comfyui_workflow", "database_query"];
 
 const search = async () => {
-  if (!query.value && !entryType.value) return
+  if (!query.value && !entryType.value) return;
 
-  loading.value = true
-  searched.value = true
+  loading.value = true;
+  searched.value = true;
 
   try {
     const response = await searchApi.search(notebooksStore.workspacePath, {
       query: query.value || undefined,
-      entry_type: entryType.value || undefined
-    })
-    results.value = response.results
+      entry_type: entryType.value || undefined,
+    });
+    results.value = response.results;
   } catch (e) {
-    console.error('Search failed:', e)
+    console.error("Search failed:", e);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const getStatusClass = (status: string) => {
-  return {
-    created: 'status-created',
-    running: 'status-running',
-    completed: 'status-completed',
-    failed: 'status-failed'
-  }[status] || ''
-}
+  return (
+    {
+      created: "status-created",
+      running: "status-running",
+      completed: "status-completed",
+      failed: "status-failed",
+    }[status] || ""
+  );
+};
 </script>
 
 <template>
@@ -71,7 +73,7 @@ const getStatusClass = (status: string) => {
         </div>
       </div>
       <button type="submit" class="btn btn-primary" :disabled="loading">
-        {{ loading ? 'Searching...' : 'Search' }}
+        {{ loading ? "Searching..." : "Search" }}
       </button>
     </form>
 
@@ -95,10 +97,14 @@ const getStatusClass = (status: string) => {
           </div>
           <div class="result-meta">
             <span>ID: {{ entry.id }}</span>
-            <span>Created: {{ new Date(entry.created_at).toLocaleString() }}</span>
+            <span
+              >Created: {{ new Date(entry.created_at).toLocaleString() }}</span
+            >
           </div>
           <div v-if="entry.metadata?.tags?.length" class="tags">
-            <span v-for="tag in entry.metadata.tags" :key="tag" class="tag">{{ tag }}</span>
+            <span v-for="tag in entry.metadata.tags" :key="tag" class="tag">{{
+              tag
+            }}</span>
           </div>
         </div>
       </div>
@@ -159,7 +165,9 @@ const getStatusClass = (status: string) => {
 }
 
 .result-card {
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .result-card:hover {

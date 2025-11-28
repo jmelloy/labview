@@ -1,91 +1,112 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits, defineProps } from 'vue'
+import { ref, computed, defineEmits, defineProps } from "vue";
 
 const props = defineProps<{
   modelValue?: {
-    url?: string
-    method?: string
-    headers?: Record<string, string>
-    body?: unknown
-  }
-}>()
+    url?: string;
+    method?: string;
+    headers?: Record<string, string>;
+    body?: unknown;
+  };
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: Record<string, unknown>): void
-}>()
+  (e: "update:modelValue", value: Record<string, unknown>): void;
+}>();
 
-const url = ref(props.modelValue?.url || '')
-const method = ref(props.modelValue?.method || 'GET')
+const url = ref(props.modelValue?.url || "");
+const method = ref(props.modelValue?.method || "GET");
 const headersJson = ref(
   props.modelValue?.headers
     ? JSON.stringify(props.modelValue.headers, null, 2)
-    : ''
-)
+    : "",
+);
 const bodyJson = ref(
-  props.modelValue?.body
-    ? JSON.stringify(props.modelValue.body, null, 2)
-    : ''
-)
+  props.modelValue?.body ? JSON.stringify(props.modelValue.body, null, 2) : "",
+);
 
-const headersError = ref('')
-const bodyError = ref('')
+const headersError = ref("");
+const bodyError = ref("");
 
-const httpMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
+const httpMethods = [
+  "GET",
+  "POST",
+  "PUT",
+  "PATCH",
+  "DELETE",
+  "HEAD",
+  "OPTIONS",
+];
 
 const inputs = computed(() => {
   const result: Record<string, unknown> = {
     url: url.value,
     method: method.value,
-  }
+  };
 
   if (headersJson.value.trim()) {
     try {
-      result.headers = JSON.parse(headersJson.value)
-      headersError.value = ''
+      result.headers = JSON.parse(headersJson.value);
+      headersError.value = "";
     } catch {
-      headersError.value = 'Invalid JSON'
+      headersError.value = "Invalid JSON";
     }
   }
 
-  if (bodyJson.value.trim() && ['POST', 'PUT', 'PATCH'].includes(method.value)) {
+  if (
+    bodyJson.value.trim() &&
+    ["POST", "PUT", "PATCH"].includes(method.value)
+  ) {
     try {
-      result.body = JSON.parse(bodyJson.value)
-      bodyError.value = ''
+      result.body = JSON.parse(bodyJson.value);
+      bodyError.value = "";
     } catch {
-      bodyError.value = 'Invalid JSON'
+      bodyError.value = "Invalid JSON";
     }
   }
 
-  return result
-})
+  return result;
+});
 
 const updateValue = () => {
-  emit('update:modelValue', inputs.value)
-}
+  emit("update:modelValue", inputs.value);
+};
 
-const showBody = computed(() => ['POST', 'PUT', 'PATCH'].includes(method.value))
+const showBody = computed(() =>
+  ["POST", "PUT", "PATCH"].includes(method.value),
+);
 
 // Common header templates
 const headerTemplates = [
-  { label: 'JSON Content-Type', value: '{\n  "Content-Type": "application/json"\n}' },
-  { label: 'Bearer Auth', value: '{\n  "Authorization": "Bearer YOUR_TOKEN"\n}' },
-  { label: 'API Key', value: '{\n  "X-API-Key": "YOUR_API_KEY"\n}' },
-]
+  {
+    label: "JSON Content-Type",
+    value: '{\n  "Content-Type": "application/json"\n}',
+  },
+  {
+    label: "Bearer Auth",
+    value: '{\n  "Authorization": "Bearer YOUR_TOKEN"\n}',
+  },
+  { label: "API Key", value: '{\n  "X-API-Key": "YOUR_API_KEY"\n}' },
+];
 
 const applyHeaderTemplate = (template: string) => {
   if (headersJson.value.trim()) {
     try {
-      const existing = JSON.parse(headersJson.value)
-      const newHeaders = JSON.parse(template)
-      headersJson.value = JSON.stringify({ ...existing, ...newHeaders }, null, 2)
+      const existing = JSON.parse(headersJson.value);
+      const newHeaders = JSON.parse(template);
+      headersJson.value = JSON.stringify(
+        { ...existing, ...newHeaders },
+        null,
+        2,
+      );
     } catch {
-      headersJson.value = template
+      headersJson.value = template;
     }
   } else {
-    headersJson.value = template
+    headersJson.value = template;
   }
-  updateValue()
-}
+  updateValue();
+};
 </script>
 
 <template>
@@ -202,7 +223,7 @@ const applyHeaderTemplate = (template: string) => {
 }
 
 .form-group textarea {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 0.875rem;
   resize: vertical;
 }

@@ -1,10 +1,12 @@
 """Workspace API routes."""
 
 from pathlib import Path
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
+from codex.api.utils import get_workspace_path
 from codex.core.workspace import Workspace
 from codex.integrations import IntegrationRegistry
 
@@ -13,12 +15,14 @@ router = APIRouter()
 
 class WorkspaceInitRequest(BaseModel):
     """Request model for workspace initialization."""
+
     path: str
     name: str
 
 
 class WorkspaceResponse(BaseModel):
     """Response model for workspace info."""
+
     path: str
     name: str
     version: str
@@ -42,10 +46,10 @@ async def init_workspace(request: WorkspaceInitRequest):
 
 
 @router.get("/workspace")
-async def get_workspace(workspace_path: str):
+async def get_workspace(workspace_path: Optional[str] = Query(None)):
     """Get workspace info."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
         config = ws.get_config()
         return {
             "path": str(ws.path),

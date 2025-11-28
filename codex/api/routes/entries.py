@@ -1,11 +1,11 @@
 """Entries API routes."""
 
-from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
+from codex.api.utils import get_workspace_path
 from codex.core.workspace import Workspace
 
 router = APIRouter()
@@ -13,7 +13,8 @@ router = APIRouter()
 
 class EntryCreateRequest(BaseModel):
     """Request model for creating an entry."""
-    workspace_path: str
+
+    workspace_path: Optional[str] = None
     page_id: str
     entry_type: str
     title: str
@@ -25,6 +26,7 @@ class EntryCreateRequest(BaseModel):
 
 class EntryResponse(BaseModel):
     """Response model for entry."""
+
     id: str
     page_id: str
     entry_type: str
@@ -44,9 +46,10 @@ class EntryResponse(BaseModel):
 async def create_entry(request: EntryCreateRequest):
     """Create a new entry."""
     try:
-        ws = Workspace.load(Path(request.workspace_path))
+        ws = Workspace.load(get_workspace_path(request.workspace_path))
 
         from codex.core.page import Page
+
         page_data = ws.db_manager.get_page(request.page_id)
         if not page_data:
             raise HTTPException(status_code=404, detail="Page not found")
@@ -87,10 +90,10 @@ async def create_entry(request: EntryCreateRequest):
 
 
 @router.get("/{entry_id}", response_model=EntryResponse)
-async def get_entry(entry_id: str, workspace_path: str = Query(...)):
+async def get_entry(entry_id: str, workspace_path: Optional[str] = Query(None)):
     """Get entry details."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
         entry_data = ws.db_manager.get_entry(entry_id)
         if not entry_data:
             raise HTTPException(status_code=404, detail="Entry not found")
@@ -120,16 +123,18 @@ async def get_entry(entry_id: str, workspace_path: str = Query(...)):
 
 class EntryExecuteRequest(BaseModel):
     """Request model for executing an entry."""
-    workspace_path: str
+
+    workspace_path: Optional[str] = None
 
 
 @router.post("/{entry_id}/execute", response_model=EntryResponse)
 async def execute_entry(entry_id: str, request: EntryExecuteRequest):
     """Execute an entry."""
     try:
-        ws = Workspace.load(Path(request.workspace_path))
+        ws = Workspace.load(get_workspace_path(request.workspace_path))
 
         from codex.core.entry import Entry
+
         entry_data = ws.db_manager.get_entry(entry_id)
         if not entry_data:
             raise HTTPException(status_code=404, detail="Entry not found")
@@ -162,7 +167,8 @@ async def execute_entry(entry_id: str, request: EntryExecuteRequest):
 
 class VariationCreateRequest(BaseModel):
     """Request model for creating a variation."""
-    workspace_path: str
+
+    workspace_path: Optional[str] = None
     title: str
     input_overrides: dict
     tags: list[str] = []
@@ -172,9 +178,10 @@ class VariationCreateRequest(BaseModel):
 async def create_variation(entry_id: str, request: VariationCreateRequest):
     """Create a variation of an entry."""
     try:
-        ws = Workspace.load(Path(request.workspace_path))
+        ws = Workspace.load(get_workspace_path(request.workspace_path))
 
         from codex.core.entry import Entry
+
         entry_data = ws.db_manager.get_entry(entry_id)
         if not entry_data:
             raise HTTPException(status_code=404, detail="Entry not found")
@@ -212,14 +219,15 @@ async def create_variation(entry_id: str, request: VariationCreateRequest):
 @router.get("/{entry_id}/lineage")
 async def get_entry_lineage(
     entry_id: str,
-    workspace_path: str = Query(...),
+    workspace_path: Optional[str] = Query(None),
     depth: int = Query(default=3, ge=1, le=10),
 ):
     """Get entry lineage graph."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
 
         from codex.core.entry import Entry
+
         entry_data = ws.db_manager.get_entry(entry_id)
         if not entry_data:
             raise HTTPException(status_code=404, detail="Entry not found")
@@ -237,12 +245,13 @@ async def get_entry_lineage(
 
 
 @router.delete("/{entry_id}")
-async def delete_entry(entry_id: str, workspace_path: str = Query(...)):
+async def delete_entry(entry_id: str, workspace_path: Optional[str] = Query(None)):
     """Delete an entry."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
 
         from codex.core.entry import Entry
+
         entry_data = ws.db_manager.get_entry(entry_id)
         if not entry_data:
             raise HTTPException(status_code=404, detail="Entry not found")
@@ -260,10 +269,10 @@ async def delete_entry(entry_id: str, workspace_path: str = Query(...)):
 
 
 @router.get("/{entry_id}/artifacts")
-async def list_entry_artifacts(entry_id: str, workspace_path: str = Query(...)):
+async def list_entry_artifacts(entry_id: str, workspace_path: Optional[str] = Query(None)):
     """List artifacts for an entry."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
 
         entry_data = ws.db_manager.get_entry(entry_id)
         if not entry_data:

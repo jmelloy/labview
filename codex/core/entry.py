@@ -77,11 +77,15 @@ class Entry:
         notebook_id = page.notebook_id
 
         # Commit manifest to Git
-        page.workspace.git_manager.commit_entry(notebook_id, page.id, entry_id, entry.to_dict())
+        page.workspace.git_manager.commit_entry(
+            notebook_id, page.id, entry_id, entry.to_dict()
+        )
 
         # Update lineage if has parent
         if parent_id:
-            page.workspace.db_manager.add_lineage_edge(parent_id, entry_id, "derives_from")
+            page.workspace.db_manager.add_lineage_edge(
+                parent_id, entry_id, "derives_from"
+            )
 
         return entry
 
@@ -94,7 +98,11 @@ class Entry:
             workspace=workspace,
             entry_type=data["entry_type"],
             title=data["title"],
-            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data["created_at"], str) else data["created_at"],
+            created_at=(
+                datetime.fromisoformat(data["created_at"])
+                if isinstance(data["created_at"], str)
+                else data["created_at"]
+            ),
             status=data["status"],
             parent_id=data.get("parent_id"),
             inputs=data.get("inputs", {}),
@@ -112,7 +120,11 @@ class Entry:
             "page_id": self.page_id,
             "entry_type": self.entry_type,
             "title": self.title,
-            "created_at": self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at,
+            "created_at": (
+                self.created_at.isoformat()
+                if isinstance(self.created_at, datetime)
+                else self.created_at
+            ),
             "status": self.status,
             "parent_id": self.parent_id,
             "inputs": self.inputs,
@@ -172,7 +184,9 @@ class Entry:
         page_data = self.workspace.db_manager.get_page(self.page_id)
         if page_data:
             notebook_id = page_data["notebook_id"]
-            self.workspace.git_manager.update_entry(notebook_id, self.page_id, self.id, self.to_dict())
+            self.workspace.git_manager.update_entry(
+                notebook_id, self.page_id, self.id, self.to_dict()
+            )
 
     def add_artifact(
         self,
@@ -193,7 +207,9 @@ class Entry:
             "hash": artifact_hash,
             "size_bytes": len(data),
             "path": str(self.workspace.storage_manager.get_blob_path(artifact_hash)),
-            "thumbnail_path": str(self.workspace.storage_manager.get_thumbnail_path(artifact_hash)),
+            "thumbnail_path": str(
+                self.workspace.storage_manager.get_thumbnail_path(artifact_hash)
+            ),
             "metadata": metadata or {},
         }
 
@@ -228,7 +244,11 @@ class Entry:
         # Merge inputs with overrides
         new_inputs = {**self.inputs}
         for key, value in input_overrides.items():
-            if isinstance(value, dict) and key in new_inputs and isinstance(new_inputs[key], dict):
+            if (
+                isinstance(value, dict)
+                and key in new_inputs
+                and isinstance(new_inputs[key], dict)
+            ):
                 new_inputs[key] = {**new_inputs[key], **value}
             else:
                 new_inputs[key] = value
@@ -252,7 +272,9 @@ class Entry:
         variation._update()
 
         # Add variation relationship
-        self.workspace.db_manager.add_lineage_edge(self.id, variation.id, "variation_of")
+        self.workspace.db_manager.add_lineage_edge(
+            self.id, variation.id, "variation_of"
+        )
 
         return variation
 

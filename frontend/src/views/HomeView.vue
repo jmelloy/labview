@@ -1,5 +1,4 @@
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <template>
   <div class="home">
@@ -16,19 +15,31 @@
     <section class="features">
       <div class="feature card">
         <h3>📓 Notebooks</h3>
-        <p>Organize your work into notebooks, pages, and entries for structured experimentation.</p>
+        <p>
+          Organize your work into notebooks, pages, and entries for structured
+          experimentation.
+        </p>
       </div>
       <div class="feature card">
         <h3>🔗 Lineage Tracking</h3>
-        <p>Track the evolution of your experiments with parent-child relationships and variations.</p>
+        <p>
+          Track the evolution of your experiments with parent-child
+          relationships and variations.
+        </p>
       </div>
       <div class="feature card">
         <h3>📦 Content-Addressable Storage</h3>
-        <p>Deduplicated artifact storage with automatic thumbnails and efficient retrieval.</p>
+        <p>
+          Deduplicated artifact storage with automatic thumbnails and efficient
+          retrieval.
+        </p>
       </div>
       <div class="feature card">
         <h3>🔍 Search</h3>
-        <p>Find any entry, artifact, or experiment with powerful search capabilities.</p>
+        <p>
+          Find any entry, artifact, or experiment with powerful search
+          capabilities.
+        </p>
       </div>
     </section>
   </div>

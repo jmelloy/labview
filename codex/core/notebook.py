@@ -72,7 +72,9 @@ class Notebook:
 
         # Create README
         with open(notebook_dir / "README.md", "w") as f:
-            f.write(f"# {title}\n\n{description}\n\nCreated: {notebook.created_at.isoformat()}\n")
+            f.write(
+                f"# {title}\n\n{description}\n\nCreated: {notebook.created_at.isoformat()}\n"
+            )
 
         return notebook
 
@@ -84,8 +86,16 @@ class Notebook:
             workspace=workspace,
             title=data["title"],
             description=data.get("description", ""),
-            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data["created_at"], str) else data["created_at"],
-            updated_at=datetime.fromisoformat(data["updated_at"]) if isinstance(data["updated_at"], str) else data["updated_at"],
+            created_at=(
+                datetime.fromisoformat(data["created_at"])
+                if isinstance(data["created_at"], str)
+                else data["created_at"]
+            ),
+            updated_at=(
+                datetime.fromisoformat(data["updated_at"])
+                if isinstance(data["updated_at"], str)
+                else data["updated_at"]
+            ),
             tags=data.get("tags", []),
             settings=data.get("settings", {}),
             metadata=data.get("metadata", {}),
@@ -97,8 +107,16 @@ class Notebook:
             "id": self.id,
             "title": self.title,
             "description": self.description,
-            "created_at": self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at,
-            "updated_at": self.updated_at.isoformat() if isinstance(self.updated_at, datetime) else self.updated_at,
+            "created_at": (
+                self.created_at.isoformat()
+                if isinstance(self.created_at, datetime)
+                else self.created_at
+            ),
+            "updated_at": (
+                self.updated_at.isoformat()
+                if isinstance(self.updated_at, datetime)
+                else self.updated_at
+            ),
             "tags": self.tags,
             "settings": self.settings,
             "metadata": self.metadata,

@@ -31,12 +31,18 @@ class Notebook(Base):
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     settings = Column(Text, nullable=True)  # JSON string
     metadata_ = Column("metadata", Text, nullable=True)  # JSON string
 
-    pages = relationship("Page", back_populates="notebook", cascade="all, delete-orphan")
-    tags = relationship("NotebookTag", back_populates="notebook", cascade="all, delete-orphan")
+    pages = relationship(
+        "Page", back_populates="notebook", cascade="all, delete-orphan"
+    )
+    tags = relationship(
+        "NotebookTag", back_populates="notebook", cascade="all, delete-orphan"
+    )
 
 
 Index("idx_notebooks_created", Notebook.created_at.desc())
@@ -48,11 +54,15 @@ class Page(Base):
     __tablename__ = "pages"
 
     id = Column(String, primary_key=True)
-    notebook_id = Column(String, ForeignKey("notebooks.id", ondelete="CASCADE"), nullable=False)
+    notebook_id = Column(
+        String, ForeignKey("notebooks.id", ondelete="CASCADE"), nullable=False
+    )
     title = Column(String, nullable=False)
     date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     narrative = Column(Text, nullable=True)  # JSON string
     metadata_ = Column("metadata", Text, nullable=True)  # JSON string
 
@@ -87,8 +97,12 @@ class Entry(Base):
 
     page = relationship("Page", back_populates="entries")
     parent = relationship("Entry", remote_side=[id], backref="children")
-    artifacts = relationship("Artifact", back_populates="entry", cascade="all, delete-orphan")
-    tags = relationship("EntryTag", back_populates="entry", cascade="all, delete-orphan")
+    artifacts = relationship(
+        "Artifact", back_populates="entry", cascade="all, delete-orphan"
+    )
+    tags = relationship(
+        "EntryTag", back_populates="entry", cascade="all, delete-orphan"
+    )
 
 
 Index("idx_entries_page", Entry.page_id)
@@ -103,7 +117,9 @@ class Artifact(Base):
     __tablename__ = "artifacts"
 
     id = Column(String, primary_key=True)
-    entry_id = Column(String, ForeignKey("entries.id", ondelete="CASCADE"), nullable=False)
+    entry_id = Column(
+        String, ForeignKey("entries.id", ondelete="CASCADE"), nullable=False
+    )
     type = Column(String, nullable=False)
     hash = Column(String, nullable=False, unique=True)
     size_bytes = Column(Integer, nullable=False)

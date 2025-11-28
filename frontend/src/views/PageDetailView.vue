@@ -1,56 +1,63 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useNotebooksStore } from '@/stores/notebooks'
-import { pagesApi, entriesApi } from '@/api'
-import type { Page, Entry } from '@/types'
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useNotebooksStore } from "@/stores/notebooks";
+import { pagesApi, entriesApi } from "@/api";
+import type { Page, Entry } from "@/types";
 
-const route = useRoute()
-const router = useRouter()
-const notebooksStore = useNotebooksStore()
+const route = useRoute();
+const router = useRouter();
+const notebooksStore = useNotebooksStore();
 
-const page = ref<Page | null>(null)
-const entries = ref<Entry[]>([])
-const loading = ref(true)
+const page = ref<Page | null>(null);
+const entries = ref<Entry[]>([]);
+const loading = ref(true);
 
-const notebookId = computed(() => route.params.notebookId as string)
-const pageId = computed(() => route.params.pageId as string)
-const notebook = computed(() => notebooksStore.notebooks.get(notebookId.value))
+const notebookId = computed(() => route.params.notebookId as string);
+const pageId = computed(() => route.params.pageId as string);
+const notebook = computed(() => notebooksStore.notebooks.get(notebookId.value));
 
 onMounted(async () => {
-  await notebooksStore.loadNotebook(notebookId.value)
+  await notebooksStore.loadNotebook(notebookId.value);
   try {
-    page.value = await pagesApi.get(notebooksStore.workspacePath, pageId.value)
-    entries.value = await entriesApi.list(notebooksStore.workspacePath, pageId.value)
+    page.value = await pagesApi.get(notebooksStore.workspacePath, pageId.value);
+    entries.value = await entriesApi.list(
+      notebooksStore.workspacePath,
+      pageId.value,
+    );
   } catch (e) {
-    console.error('Failed to load page:', e)
+    console.error("Failed to load page:", e);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 
 const getStatusClass = (status: string) => {
-  return {
-    created: 'status-created',
-    running: 'status-running',
-    completed: 'status-completed',
-    failed: 'status-failed'
-  }[status] || ''
-}
+  return (
+    {
+      created: "status-created",
+      running: "status-running",
+      completed: "status-completed",
+      failed: "status-failed",
+    }[status] || ""
+  );
+};
 
 const getEntryTypeIcon = (entryType: string) => {
   const icons: Record<string, string> = {
-    'custom': '📝',
-    'api_call': '🌐',
-    'database_query': '🗃️',
-    'graphql': '◈',
-  }
-  return icons[entryType] || '📄'
-}
+    custom: "📝",
+    api_call: "🌐",
+    database_query: "🗃️",
+    graphql: "◈",
+  };
+  return icons[entryType] || "📄";
+};
 
 const createNewEntry = () => {
-  router.push(`/notebooks/${notebookId.value}/pages/${pageId.value}/entries/new`)
-}
+  router.push(
+    `/notebooks/${notebookId.value}/pages/${pageId.value}/entries/new`,
+  );
+};
 </script>
 
 <template>
@@ -59,14 +66,18 @@ const createNewEntry = () => {
       <div class="breadcrumb">
         <RouterLink to="/notebooks">Notebooks</RouterLink>
         <span>/</span>
-        <RouterLink :to="`/notebooks/${notebookId}`">{{ notebook?.title }}</RouterLink>
+        <RouterLink :to="`/notebooks/${notebookId}`">{{
+          notebook?.title
+        }}</RouterLink>
         <span>/</span>
         <span>{{ page.title }}</span>
       </div>
 
       <div class="title-row">
         <h1>{{ page.title }}</h1>
-        <span class="date">{{ page.date ? new Date(page.date).toLocaleDateString() : 'Undated' }}</span>
+        <span class="date">{{
+          page.date ? new Date(page.date).toLocaleDateString() : "Undated"
+        }}</span>
       </div>
 
       <div v-if="page.tags.length > 0" class="tags">
@@ -74,7 +85,10 @@ const createNewEntry = () => {
       </div>
     </header>
 
-    <section class="narrative-section card" v-if="Object.values(page.narrative || {}).some(Boolean)">
+    <section
+      class="narrative-section card"
+      v-if="Object.values(page.narrative || {}).some(Boolean)"
+    >
       <h2>Narrative</h2>
       <div class="narrative-fields">
         <div v-if="page.narrative?.goals" class="narrative-field">
@@ -103,13 +117,17 @@ const createNewEntry = () => {
     <section class="entries-section">
       <div class="section-header">
         <h2>Entries ({{ entries.length }})</h2>
-        <button class="btn btn-primary" @click="createNewEntry">+ New Entry</button>
+        <button class="btn btn-primary" @click="createNewEntry">
+          + New Entry
+        </button>
       </div>
 
       <div v-if="entries.length === 0" class="empty">
         <p>No entries in this page yet.</p>
         <p>Create your first entry to start documenting your work.</p>
-        <button class="btn btn-primary" @click="createNewEntry">Create Entry</button>
+        <button class="btn btn-primary" @click="createNewEntry">
+          Create Entry
+        </button>
       </div>
 
       <div v-else class="entries-list">
@@ -117,7 +135,9 @@ const createNewEntry = () => {
           <div class="entry-header">
             <div class="entry-info">
               <span class="entry-type">
-                <span class="entry-type-icon">{{ getEntryTypeIcon(entry.entry_type) }}</span>
+                <span class="entry-type-icon">{{
+                  getEntryTypeIcon(entry.entry_type)
+                }}</span>
                 {{ entry.entry_type }}
               </span>
               <h3>{{ entry.title }}</h3>
@@ -128,16 +148,22 @@ const createNewEntry = () => {
           </div>
 
           <div class="entry-meta">
-            <span>Created: {{ new Date(entry.created_at).toLocaleString() }}</span>
+            <span
+              >Created: {{ new Date(entry.created_at).toLocaleString() }}</span
+            >
             <span v-if="entry.parent_id">Parent: {{ entry.parent_id }}</span>
           </div>
 
           <div v-if="entry.metadata?.tags?.length" class="tags">
-            <span v-for="tag in entry.metadata.tags" :key="tag" class="tag">{{ tag }}</span>
+            <span v-for="tag in entry.metadata.tags" :key="tag" class="tag">{{
+              tag
+            }}</span>
           </div>
 
           <div class="entry-actions">
-            <button class="btn btn-secondary" v-if="entry.status === 'created'">Execute</button>
+            <button class="btn btn-secondary" v-if="entry.status === 'created'">
+              Execute
+            </button>
             <button class="btn btn-secondary">Create Variation</button>
             <button class="btn btn-secondary">View Lineage</button>
           </div>
@@ -221,7 +247,9 @@ const createNewEntry = () => {
 }
 
 .entry-card {
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .entry-card:hover {

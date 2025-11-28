@@ -1,12 +1,12 @@
 """Search API routes."""
 
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
+from codex.api.utils import get_workspace_path
 from codex.core.workspace import Workspace
 
 router = APIRouter()
@@ -14,7 +14,8 @@ router = APIRouter()
 
 class SearchRequest(BaseModel):
     """Request model for search."""
-    workspace_path: str
+
+    workspace_path: Optional[str] = None
     query: Optional[str] = None
     entry_type: Optional[str] = None
     tags: Optional[list[str]] = None
@@ -28,14 +29,18 @@ class SearchRequest(BaseModel):
 async def search(request: SearchRequest):
     """Search entries."""
     try:
-        ws = Workspace.load(Path(request.workspace_path))
+        ws = Workspace.load(get_workspace_path(request.workspace_path))
 
         results = ws.search_entries(
             query=request.query,
             entry_type=request.entry_type,
             tags=request.tags,
-            date_from=datetime.fromisoformat(request.date_from) if request.date_from else None,
-            date_to=datetime.fromisoformat(request.date_to) if request.date_to else None,
+            date_from=(
+                datetime.fromisoformat(request.date_from) if request.date_from else None
+            ),
+            date_to=(
+                datetime.fromisoformat(request.date_to) if request.date_to else None
+            ),
             notebook_id=request.notebook_id,
             page_id=request.page_id,
         )
@@ -52,7 +57,7 @@ async def search(request: SearchRequest):
 
 @router.get("")
 async def search_get(
-    workspace_path: str = Query(...),
+    workspace_path: Optional[str] = Query(None),
     query: Optional[str] = None,
     entry_type: Optional[str] = None,
     notebook_id: Optional[str] = None,
@@ -62,7 +67,7 @@ async def search_get(
 ):
     """Search entries (GET method)."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
 
         results = ws.search_entries(
             query=query,

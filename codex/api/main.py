@@ -1,6 +1,5 @@
 """FastAPI application for Lab Notebook."""
 
-
 from fastapi import FastAPI
 
 from codex.api.routes.artifacts import router as artifacts_router

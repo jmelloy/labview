@@ -53,7 +53,8 @@ class Page:
             date=date or now,
             created_at=now,
             updated_at=now,
-            narrative=narrative or {
+            narrative=narrative
+            or {
                 "goals": "",
                 "hypothesis": "",
                 "observations": "",
@@ -97,9 +98,21 @@ class Page:
             notebook_id=data["notebook_id"],
             workspace=workspace,
             title=data["title"],
-            date=datetime.fromisoformat(data["date"]) if data.get("date") and isinstance(data["date"], str) else data.get("date"),
-            created_at=datetime.fromisoformat(data["created_at"]) if isinstance(data["created_at"], str) else data["created_at"],
-            updated_at=datetime.fromisoformat(data["updated_at"]) if isinstance(data["updated_at"], str) else data["updated_at"],
+            date=(
+                datetime.fromisoformat(data["date"])
+                if data.get("date") and isinstance(data["date"], str)
+                else data.get("date")
+            ),
+            created_at=(
+                datetime.fromisoformat(data["created_at"])
+                if isinstance(data["created_at"], str)
+                else data["created_at"]
+            ),
+            updated_at=(
+                datetime.fromisoformat(data["updated_at"])
+                if isinstance(data["updated_at"], str)
+                else data["updated_at"]
+            ),
             narrative=data.get("narrative", {}),
             tags=data.get("tags", []),
             metadata=data.get("metadata", {}),
@@ -111,9 +124,19 @@ class Page:
             "id": self.id,
             "notebook_id": self.notebook_id,
             "title": self.title,
-            "date": self.date.isoformat() if isinstance(self.date, datetime) else self.date,
-            "created_at": self.created_at.isoformat() if isinstance(self.created_at, datetime) else self.created_at,
-            "updated_at": self.updated_at.isoformat() if isinstance(self.updated_at, datetime) else self.updated_at,
+            "date": (
+                self.date.isoformat() if isinstance(self.date, datetime) else self.date
+            ),
+            "created_at": (
+                self.created_at.isoformat()
+                if isinstance(self.created_at, datetime)
+                else self.created_at
+            ),
+            "updated_at": (
+                self.updated_at.isoformat()
+                if isinstance(self.updated_at, datetime)
+                else self.updated_at
+            ),
             "narrative": self.narrative,
             "tags": self.tags,
             "metadata": self.metadata,
@@ -160,7 +183,9 @@ class Page:
         self.narrative[field_name] = content
         self.updated_at = _now()
         self.workspace.db_manager.update_page(self.id, {"narrative": self.narrative})
-        self.workspace.git_manager.update_page(self.notebook_id, self.id, self.to_dict())
+        self.workspace.git_manager.update_page(
+            self.notebook_id, self.id, self.to_dict()
+        )
 
     def update(self, **kwargs) -> "Page":
         """Update page properties."""
@@ -181,7 +206,9 @@ class Page:
         self.workspace.db_manager.update_page(self.id, self.to_dict())
 
         # Update in Git
-        self.workspace.git_manager.update_page(self.notebook_id, self.id, self.to_dict())
+        self.workspace.git_manager.update_page(
+            self.notebook_id, self.id, self.to_dict()
+        )
 
         return self
 

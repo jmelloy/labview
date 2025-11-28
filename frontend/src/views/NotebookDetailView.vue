@@ -1,40 +1,49 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { useNotebooksStore } from '@/stores/notebooks'
-import { pagesApi } from '@/api'
-import type { Page } from '@/types'
+import { ref, computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useNotebooksStore } from "@/stores/notebooks";
+import { pagesApi } from "@/api";
+import type { Page } from "@/types";
 
-const route = useRoute()
-const notebooksStore = useNotebooksStore()
+const route = useRoute();
+const notebooksStore = useNotebooksStore();
 
-const pages = ref<Page[]>([])
-const loading = ref(true)
+const pages = ref<Page[]>([]);
+const loading = ref(true);
 
-const notebookId = computed(() => route.params.notebookId as string)
-const notebook = computed(() => notebooksStore.notebooks.get(notebookId.value))
+const notebookId = computed(() => route.params.notebookId as string);
+const notebook = computed(() => notebooksStore.notebooks.get(notebookId.value));
 
 onMounted(async () => {
-  await notebooksStore.loadNotebook(notebookId.value)
+  await notebooksStore.loadNotebook(notebookId.value);
   try {
-    pages.value = await pagesApi.list(notebooksStore.workspacePath, notebookId.value)
+    pages.value = await pagesApi.list(
+      notebooksStore.workspacePath,
+      notebookId.value,
+    );
   } catch (e) {
-    console.error('Failed to load pages:', e)
+    console.error("Failed to load pages:", e);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 </script>
 
 <template>
   <div class="notebook-detail" v-if="notebook">
     <header class="page-header">
       <div>
-        <RouterLink to="/notebooks" class="back-link">← Back to Notebooks</RouterLink>
+        <RouterLink to="/notebooks" class="back-link"
+          >← Back to Notebooks</RouterLink
+        >
         <h1>{{ notebook.title }}</h1>
-        <p v-if="notebook.description" class="description">{{ notebook.description }}</p>
+        <p v-if="notebook.description" class="description">
+          {{ notebook.description }}
+        </p>
         <div v-if="notebook.tags.length > 0" class="tags">
-          <span v-for="tag in notebook.tags" :key="tag" class="tag">{{ tag }}</span>
+          <span v-for="tag in notebook.tags" :key="tag" class="tag">{{
+            tag
+          }}</span>
         </div>
       </div>
       <button class="btn btn-primary">+ New Page</button>
@@ -56,11 +65,19 @@ onMounted(async () => {
           :to="`/notebooks/${notebookId}/pages/${page.id}`"
           class="page-card card"
         >
-          <div class="page-date">{{ page.date ? new Date(page.date).toLocaleDateString() : 'Undated' }}</div>
+          <div class="page-date">
+            {{
+              page.date ? new Date(page.date).toLocaleDateString() : "Undated"
+            }}
+          </div>
           <h3>{{ page.title }}</h3>
-          <p v-if="page.narrative?.goals" class="goals">{{ page.narrative.goals }}</p>
+          <p v-if="page.narrative?.goals" class="goals">
+            {{ page.narrative.goals }}
+          </p>
           <div v-if="page.tags.length > 0" class="tags">
-            <span v-for="tag in page.tags" :key="tag" class="tag">{{ tag }}</span>
+            <span v-for="tag in page.tags" :key="tag" class="tag">{{
+              tag
+            }}</span>
           </div>
         </RouterLink>
       </div>
@@ -110,7 +127,9 @@ onMounted(async () => {
   display: block;
   text-decoration: none;
   color: inherit;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .page-card:hover {

@@ -1,76 +1,76 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits, defineProps } from 'vue'
+import { ref, computed, defineEmits, defineProps } from "vue";
 
 const props = defineProps<{
   modelValue?: {
-    url?: string
-    query?: string
-    variables?: Record<string, unknown>
-    headers?: Record<string, string>
-    operation_name?: string
-  }
-}>()
+    url?: string;
+    query?: string;
+    variables?: Record<string, unknown>;
+    headers?: Record<string, string>;
+    operation_name?: string;
+  };
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: Record<string, unknown>): void
-}>()
+  (e: "update:modelValue", value: Record<string, unknown>): void;
+}>();
 
-const url = ref(props.modelValue?.url || '')
-const query = ref(props.modelValue?.query || '')
+const url = ref(props.modelValue?.url || "");
+const query = ref(props.modelValue?.query || "");
 const variablesJson = ref(
   props.modelValue?.variables
     ? JSON.stringify(props.modelValue.variables, null, 2)
-    : ''
-)
+    : "",
+);
 const headersJson = ref(
   props.modelValue?.headers
     ? JSON.stringify(props.modelValue.headers, null, 2)
-    : ''
-)
-const operationName = ref(props.modelValue?.operation_name || '')
+    : "",
+);
+const operationName = ref(props.modelValue?.operation_name || "");
 
-const variablesError = ref('')
-const headersError = ref('')
+const variablesError = ref("");
+const headersError = ref("");
 
 const inputs = computed(() => {
   const result: Record<string, unknown> = {
     url: url.value,
     query: query.value,
-  }
+  };
 
   if (operationName.value.trim()) {
-    result.operation_name = operationName.value
+    result.operation_name = operationName.value;
   }
 
   if (variablesJson.value.trim()) {
     try {
-      result.variables = JSON.parse(variablesJson.value)
-      variablesError.value = ''
+      result.variables = JSON.parse(variablesJson.value);
+      variablesError.value = "";
     } catch {
-      variablesError.value = 'Invalid JSON'
+      variablesError.value = "Invalid JSON";
     }
   }
 
   if (headersJson.value.trim()) {
     try {
-      result.headers = JSON.parse(headersJson.value)
-      headersError.value = ''
+      result.headers = JSON.parse(headersJson.value);
+      headersError.value = "";
     } catch {
-      headersError.value = 'Invalid JSON'
+      headersError.value = "Invalid JSON";
     }
   }
 
-  return result
-})
+  return result;
+});
 
 const updateValue = () => {
-  emit('update:modelValue', inputs.value)
-}
+  emit("update:modelValue", inputs.value);
+};
 
 // Example GraphQL query templates
 const queryTemplates = [
   {
-    label: 'Simple Query',
+    label: "Simple Query",
     query: `query {
   users {
     id
@@ -78,10 +78,10 @@ const queryTemplates = [
     email
   }
 }`,
-    variables: '',
+    variables: "",
   },
   {
-    label: 'Query with Variables',
+    label: "Query with Variables",
     query: `query GetUser($id: ID!) {
   user(id: $id) {
     id
@@ -92,7 +92,7 @@ const queryTemplates = [
     variables: '{\n  "id": "1"\n}',
   },
   {
-    label: 'Mutation',
+    label: "Mutation",
     query: `mutation CreateUser($input: CreateUserInput!) {
   createUser(input: $input) {
     id
@@ -100,15 +100,16 @@ const queryTemplates = [
     email
   }
 }`,
-    variables: '{\n  "input": {\n    "name": "John Doe",\n    "email": "john@example.com"\n  }\n}',
+    variables:
+      '{\n  "input": {\n    "name": "John Doe",\n    "email": "john@example.com"\n  }\n}',
   },
-]
+];
 
-const applyTemplate = (template: typeof queryTemplates[0]) => {
-  query.value = template.query
-  variablesJson.value = template.variables
-  updateValue()
-}
+const applyTemplate = (template: (typeof queryTemplates)[0]) => {
+  query.value = template.query;
+  variablesJson.value = template.variables;
+  updateValue();
+};
 </script>
 
 <template>
@@ -159,7 +160,9 @@ const applyTemplate = (template: typeof queryTemplates[0]) => {
         :class="{ error: variablesError }"
       ></textarea>
       <span v-if="variablesError" class="error-text">{{ variablesError }}</span>
-      <span v-else class="hint">Optional: JSON object with query variables</span>
+      <span v-else class="hint"
+        >Optional: JSON object with query variables</span
+      >
     </div>
 
     <div class="form-group">
@@ -171,7 +174,9 @@ const applyTemplate = (template: typeof queryTemplates[0]) => {
         placeholder="GetUser"
         @input="updateValue"
       />
-      <span class="hint">Optional: Operation name for documents with multiple operations</span>
+      <span class="hint"
+        >Optional: Operation name for documents with multiple operations</span
+      >
     </div>
 
     <div class="form-group">
@@ -219,7 +224,7 @@ const applyTemplate = (template: typeof queryTemplates[0]) => {
 }
 
 .form-group textarea {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 0.875rem;
   resize: vertical;
 }

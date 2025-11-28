@@ -1,65 +1,68 @@
 <script setup lang="ts">
-import { ref, computed, defineEmits, defineProps } from 'vue'
+import { ref, computed, defineEmits, defineProps } from "vue";
 
 const props = defineProps<{
   modelValue?: {
-    connection_string?: string
-    query?: string
-    parameters?: Record<string, unknown>
-    max_rows?: number
-  }
-}>()
+    connection_string?: string;
+    query?: string;
+    parameters?: Record<string, unknown>;
+    max_rows?: number;
+  };
+}>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: Record<string, unknown>): void
-}>()
+  (e: "update:modelValue", value: Record<string, unknown>): void;
+}>();
 
-const connectionString = ref(props.modelValue?.connection_string || '')
-const query = ref(props.modelValue?.query || '')
+const connectionString = ref(props.modelValue?.connection_string || "");
+const query = ref(props.modelValue?.query || "");
 const parametersJson = ref(
   props.modelValue?.parameters
     ? JSON.stringify(props.modelValue.parameters, null, 2)
-    : ''
-)
-const maxRows = ref(props.modelValue?.max_rows || 1000)
+    : "",
+);
+const maxRows = ref(props.modelValue?.max_rows || 1000);
 
-const parametersError = ref('')
+const parametersError = ref("");
 
 const inputs = computed(() => {
   const result: Record<string, unknown> = {
     connection_string: connectionString.value,
     query: query.value,
     max_rows: maxRows.value,
-  }
+  };
 
   if (parametersJson.value.trim()) {
     try {
-      result.parameters = JSON.parse(parametersJson.value)
-      parametersError.value = ''
+      result.parameters = JSON.parse(parametersJson.value);
+      parametersError.value = "";
     } catch {
-      parametersError.value = 'Invalid JSON'
+      parametersError.value = "Invalid JSON";
     }
   }
 
-  return result
-})
+  return result;
+});
 
 const updateValue = () => {
-  emit('update:modelValue', inputs.value)
-}
+  emit("update:modelValue", inputs.value);
+};
 
 // Predefined connection string templates
 const connectionTemplates = [
-  { label: 'SQLite (memory)', value: 'sqlite:///:memory:' },
-  { label: 'SQLite (file)', value: 'sqlite:///path/to/database.db' },
-  { label: 'PostgreSQL', value: 'postgresql://user:password@localhost:5432/dbname' },
-  { label: 'MySQL', value: 'mysql://user:password@localhost:3306/dbname' },
-]
+  { label: "SQLite (memory)", value: "sqlite:///:memory:" },
+  { label: "SQLite (file)", value: "sqlite:///path/to/database.db" },
+  {
+    label: "PostgreSQL",
+    value: "postgresql://user:password@localhost:5432/dbname",
+  },
+  { label: "MySQL", value: "mysql://user:password@localhost:3306/dbname" },
+];
 
 const applyTemplate = (template: string) => {
-  connectionString.value = template
-  updateValue()
-}
+  connectionString.value = template;
+  updateValue();
+};
 </script>
 
 <template>
@@ -111,8 +114,12 @@ const applyTemplate = (template: string) => {
         @input="updateValue"
         :class="{ error: parametersError }"
       ></textarea>
-      <span v-if="parametersError" class="error-text">{{ parametersError }}</span>
-      <span v-else class="hint">Optional: JSON object with query parameters</span>
+      <span v-if="parametersError" class="error-text">{{
+        parametersError
+      }}</span>
+      <span v-else class="hint"
+        >Optional: JSON object with query parameters</span
+      >
     </div>
 
     <div class="form-group">
@@ -159,7 +166,7 @@ const applyTemplate = (template: string) => {
 }
 
 .form-group textarea {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 0.875rem;
   resize: vertical;
 }

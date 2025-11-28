@@ -1,12 +1,12 @@
 """Pages API routes."""
 
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
+from codex.api.utils import get_workspace_path
 from codex.core.workspace import Workspace
 
 router = APIRouter()
@@ -14,7 +14,8 @@ router = APIRouter()
 
 class PageCreateRequest(BaseModel):
     """Request model for creating a page."""
-    workspace_path: str
+
+    workspace_path: Optional[str] = None
     notebook_id: str
     title: str
     date: Optional[str] = None
@@ -23,6 +24,7 @@ class PageCreateRequest(BaseModel):
 
 class PageResponse(BaseModel):
     """Response model for page."""
+
     id: str
     notebook_id: str
     title: str
@@ -38,7 +40,7 @@ class PageResponse(BaseModel):
 async def create_page(request: PageCreateRequest):
     """Create a new page."""
     try:
-        ws = Workspace.load(Path(request.workspace_path))
+        ws = Workspace.load(get_workspace_path(request.workspace_path))
         notebook = ws.get_notebook(request.notebook_id)
         if not notebook:
             raise HTTPException(status_code=404, detail="Notebook not found")
@@ -70,10 +72,10 @@ async def create_page(request: PageCreateRequest):
 
 
 @router.get("/{page_id}", response_model=PageResponse)
-async def get_page(page_id: str, workspace_path: str = Query(...)):
+async def get_page(page_id: str, workspace_path: Optional[str] = Query(None)):
     """Get page details."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
         page_data = ws.db_manager.get_page(page_id)
         if not page_data:
             raise HTTPException(status_code=404, detail="Page not found")
@@ -99,7 +101,8 @@ async def get_page(page_id: str, workspace_path: str = Query(...)):
 
 class PageUpdateRequest(BaseModel):
     """Request model for updating a page."""
-    workspace_path: str
+
+    workspace_path: Optional[str] = None
     title: Optional[str] = None
     date: Optional[str] = None
     narrative: Optional[dict] = None
@@ -111,9 +114,10 @@ class PageUpdateRequest(BaseModel):
 async def update_page(page_id: str, request: PageUpdateRequest):
     """Update a page."""
     try:
-        ws = Workspace.load(Path(request.workspace_path))
+        ws = Workspace.load(get_workspace_path(request.workspace_path))
 
         from codex.core.page import Page
+
         page_data = ws.db_manager.get_page(page_id)
         if not page_data:
             raise HTTPException(status_code=404, detail="Page not found")
@@ -155,7 +159,8 @@ async def update_page(page_id: str, request: PageUpdateRequest):
 
 class NarrativeUpdateRequest(BaseModel):
     """Request model for updating page narrative."""
-    workspace_path: str
+
+    workspace_path: Optional[str] = None
     field: str
     content: str
 
@@ -164,9 +169,10 @@ class NarrativeUpdateRequest(BaseModel):
 async def update_narrative(page_id: str, request: NarrativeUpdateRequest):
     """Update page narrative field."""
     try:
-        ws = Workspace.load(Path(request.workspace_path))
+        ws = Workspace.load(get_workspace_path(request.workspace_path))
 
         from codex.core.page import Page
+
         page_data = ws.db_manager.get_page(page_id)
         if not page_data:
             raise HTTPException(status_code=404, detail="Page not found")
@@ -194,12 +200,13 @@ async def update_narrative(page_id: str, request: NarrativeUpdateRequest):
 
 
 @router.delete("/{page_id}")
-async def delete_page(page_id: str, workspace_path: str = Query(...)):
+async def delete_page(page_id: str, workspace_path: Optional[str] = Query(None)):
     """Delete a page."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
 
         from codex.core.page import Page
+
         page_data = ws.db_manager.get_page(page_id)
         if not page_data:
             raise HTTPException(status_code=404, detail="Page not found")
@@ -217,12 +224,13 @@ async def delete_page(page_id: str, workspace_path: str = Query(...)):
 
 
 @router.get("/{page_id}/entries")
-async def list_page_entries(page_id: str, workspace_path: str = Query(...)):
+async def list_page_entries(page_id: str, workspace_path: Optional[str] = Query(None)):
     """List entries in a page."""
     try:
-        ws = Workspace.load(Path(workspace_path))
+        ws = Workspace.load(get_workspace_path(workspace_path))
 
         from codex.core.page import Page
+
         page_data = ws.db_manager.get_page(page_id)
         if not page_data:
             raise HTTPException(status_code=404, detail="Page not found")

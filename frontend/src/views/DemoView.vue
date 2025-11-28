@@ -1,72 +1,92 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import DatabaseQueryForm from '@/components/entry/DatabaseQueryForm.vue'
-import GraphQLForm from '@/components/entry/GraphQLForm.vue'
-import ApiCallForm from '@/components/entry/ApiCallForm.vue'
-import CustomForm from '@/components/entry/CustomForm.vue'
+import { ref, computed, watch } from "vue";
+import DatabaseQueryForm from "@/components/entry/DatabaseQueryForm.vue";
+import GraphQLForm from "@/components/entry/GraphQLForm.vue";
+import ApiCallForm from "@/components/entry/ApiCallForm.vue";
+import CustomForm from "@/components/entry/CustomForm.vue";
 
 // Entry form data
-const entryType = ref('custom')
-const title = ref('')
-const inputs = ref<Record<string, unknown>>({})
-const tags = ref('')
+const entryType = ref("custom");
+const title = ref("");
+const inputs = ref<Record<string, unknown>>({});
+const tags = ref("");
 
 const entryTypes = [
-  { value: 'custom', label: 'Custom Entry', description: 'Manual entry for notes and observations', icon: '📝' },
-  { value: 'api_call', label: 'API Call', description: 'HTTP API request tracking', icon: '🌐' },
-  { value: 'database_query', label: 'SQL Query', description: 'Execute SQL queries against databases', icon: '🗃️' },
-  { value: 'graphql', label: 'GraphQL', description: 'GraphQL API queries and mutations', icon: '◈' },
-]
+  {
+    value: "custom",
+    label: "Custom Entry",
+    description: "Manual entry for notes and observations",
+    icon: "📝",
+  },
+  {
+    value: "api_call",
+    label: "API Call",
+    description: "HTTP API request tracking",
+    icon: "🌐",
+  },
+  {
+    value: "database_query",
+    label: "SQL Query",
+    description: "Execute SQL queries against databases",
+    icon: "🗃️",
+  },
+  {
+    value: "graphql",
+    label: "GraphQL",
+    description: "GraphQL API queries and mutations",
+    icon: "◈",
+  },
+];
 
-const currentEntryType = computed(() => 
-  entryTypes.find(t => t.value === entryType.value)
-)
+const currentEntryType = computed(() =>
+  entryTypes.find((t) => t.value === entryType.value),
+);
 
 const formComponent = computed(() => {
   switch (entryType.value) {
-    case 'database_query':
-      return DatabaseQueryForm
-    case 'graphql':
-      return GraphQLForm
-    case 'api_call':
-      return ApiCallForm
-    case 'custom':
+    case "database_query":
+      return DatabaseQueryForm;
+    case "graphql":
+      return GraphQLForm;
+    case "api_call":
+      return ApiCallForm;
+    case "custom":
     default:
-      return CustomForm
+      return CustomForm;
   }
-})
+});
 
 // Reset inputs when entry type changes
 watch(entryType, () => {
-  inputs.value = {}
-})
+  inputs.value = {};
+});
 
 const handleInputsUpdate = (newInputs: Record<string, unknown>) => {
-  inputs.value = newInputs
-}
+  inputs.value = newInputs;
+};
 
 const isValid = computed(() => {
-  if (!title.value.trim()) return false
-  
+  if (!title.value.trim()) return false;
+
   // Validate based on entry type
   switch (entryType.value) {
-    case 'database_query':
-      return !!(inputs.value.connection_string && inputs.value.query)
-    case 'graphql':
-      return !!(inputs.value.url && inputs.value.query)
-    case 'api_call':
-      return !!(inputs.value.url)
-    case 'custom':
+    case "database_query":
+      return !!(inputs.value.connection_string && inputs.value.query);
+    case "graphql":
+      return !!(inputs.value.url && inputs.value.query);
+    case "api_call":
+      return !!inputs.value.url;
+    case "custom":
     default:
-      return true
+      return true;
   }
-})
+});
 
-const showPreview = ref(false)
+const showPreview = ref(false);
 
 const submitEntry = () => {
-  showPreview.value = true
-}
+  showPreview.value = true;
+};
 </script>
 
 <template>
@@ -83,7 +103,10 @@ const submitEntry = () => {
       </div>
 
       <h1>Create New Entry (Demo)</h1>
-      <p class="subtitle">This is a demonstration of the entry creation forms for SQL, GraphQL, and API plugins.</p>
+      <p class="subtitle">
+        This is a demonstration of the entry creation forms for SQL, GraphQL,
+        and API plugins.
+      </p>
     </header>
 
     <form class="entry-form card" @submit.prevent="submitEntry">
@@ -145,19 +168,21 @@ const submitEntry = () => {
       <!-- Preview -->
       <section v-if="showPreview" class="form-section preview-section">
         <h2>Preview</h2>
-        <pre class="preview-json">{{ JSON.stringify({ entryType, title, inputs, tags }, null, 2) }}</pre>
+        <pre class="preview-json">{{
+          JSON.stringify({ entryType, title, inputs, tags }, null, 2)
+        }}</pre>
       </section>
 
       <!-- Actions -->
       <div class="form-actions">
-        <button type="button" class="btn btn-secondary" @click="showPreview = !showPreview">
-          {{ showPreview ? 'Hide' : 'Show' }} Preview
-        </button>
         <button
-          type="submit"
-          class="btn btn-primary"
-          :disabled="!isValid"
+          type="button"
+          class="btn btn-secondary"
+          @click="showPreview = !showPreview"
         >
+          {{ showPreview ? "Hide" : "Show" }} Preview
+        </button>
+        <button type="submit" class="btn btn-primary" :disabled="!isValid">
           Create Entry
         </button>
       </div>

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useNotebooksStore } from '@/stores/notebooks'
+import { onMounted } from "vue";
+import { useNotebooksStore } from "@/stores/notebooks";
 
-const notebooksStore = useNotebooksStore()
+const notebooksStore = useNotebooksStore();
 
 onMounted(() => {
-  notebooksStore.loadNotebooks()
-})
+  notebooksStore.loadNotebooks();
+});
 </script>
 
 <template>
@@ -71,7 +71,9 @@ onMounted(() => {
   display: block;
   text-decoration: none;
   color: inherit;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .notebook-card:hover {

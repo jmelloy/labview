@@ -1,108 +1,128 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useNotebooksStore } from '@/stores/notebooks'
-import { pagesApi, entriesApi } from '@/api'
-import type { Page } from '@/types'
-import DatabaseQueryForm from '@/components/entry/DatabaseQueryForm.vue'
-import GraphQLForm from '@/components/entry/GraphQLForm.vue'
-import ApiCallForm from '@/components/entry/ApiCallForm.vue'
-import CustomForm from '@/components/entry/CustomForm.vue'
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useNotebooksStore } from "@/stores/notebooks";
+import { pagesApi, entriesApi } from "@/api";
+import type { Page } from "@/types";
+import DatabaseQueryForm from "@/components/entry/DatabaseQueryForm.vue";
+import GraphQLForm from "@/components/entry/GraphQLForm.vue";
+import ApiCallForm from "@/components/entry/ApiCallForm.vue";
+import CustomForm from "@/components/entry/CustomForm.vue";
 
-const route = useRoute()
-const router = useRouter()
-const notebooksStore = useNotebooksStore()
+const route = useRoute();
+const router = useRouter();
+const notebooksStore = useNotebooksStore();
 
-const page = ref<Page | null>(null)
-const loading = ref(true)
-const submitting = ref(false)
-const error = ref('')
+const page = ref<Page | null>(null);
+const loading = ref(true);
+const submitting = ref(false);
+const error = ref("");
 
-const notebookId = computed(() => route.params.notebookId as string)
-const pageId = computed(() => route.params.pageId as string)
-const notebook = computed(() => notebooksStore.notebooks.get(notebookId.value))
+const notebookId = computed(() => route.params.notebookId as string);
+const pageId = computed(() => route.params.pageId as string);
+const notebook = computed(() => notebooksStore.notebooks.get(notebookId.value));
 
 // Entry form data
-const entryType = ref('custom')
-const title = ref('')
-const inputs = ref<Record<string, unknown>>({})
-const tags = ref('')
+const entryType = ref("custom");
+const title = ref("");
+const inputs = ref<Record<string, unknown>>({});
+const tags = ref("");
 
 const entryTypes = [
-  { value: 'custom', label: 'Custom Entry', description: 'Manual entry for notes and observations', icon: '📝' },
-  { value: 'api_call', label: 'API Call', description: 'HTTP API request tracking', icon: '🌐' },
-  { value: 'database_query', label: 'SQL Query', description: 'Execute SQL queries against databases', icon: '🗃️' },
-  { value: 'graphql', label: 'GraphQL', description: 'GraphQL API queries and mutations', icon: '◈' },
-]
+  {
+    value: "custom",
+    label: "Custom Entry",
+    description: "Manual entry for notes and observations",
+    icon: "📝",
+  },
+  {
+    value: "api_call",
+    label: "API Call",
+    description: "HTTP API request tracking",
+    icon: "🌐",
+  },
+  {
+    value: "database_query",
+    label: "SQL Query",
+    description: "Execute SQL queries against databases",
+    icon: "🗃️",
+  },
+  {
+    value: "graphql",
+    label: "GraphQL",
+    description: "GraphQL API queries and mutations",
+    icon: "◈",
+  },
+];
 
-const currentEntryType = computed(() => 
-  entryTypes.find(t => t.value === entryType.value)
-)
+const currentEntryType = computed(() =>
+  entryTypes.find((t) => t.value === entryType.value),
+);
 
 const formComponent = computed(() => {
   switch (entryType.value) {
-    case 'database_query':
-      return DatabaseQueryForm
-    case 'graphql':
-      return GraphQLForm
-    case 'api_call':
-      return ApiCallForm
-    case 'custom':
+    case "database_query":
+      return DatabaseQueryForm;
+    case "graphql":
+      return GraphQLForm;
+    case "api_call":
+      return ApiCallForm;
+    case "custom":
     default:
-      return CustomForm
+      return CustomForm;
   }
-})
+});
 
 // Reset inputs when entry type changes
 watch(entryType, () => {
-  inputs.value = {}
-})
+  inputs.value = {};
+});
 
 onMounted(async () => {
-  await notebooksStore.loadNotebook(notebookId.value)
+  await notebooksStore.loadNotebook(notebookId.value);
   try {
-    page.value = await pagesApi.get(notebooksStore.workspacePath, pageId.value)
+    page.value = await pagesApi.get(notebooksStore.workspacePath, pageId.value);
   } catch (e) {
-    console.error('Failed to load page:', e)
-    error.value = 'Failed to load page'
+    console.error("Failed to load page:", e);
+    error.value = "Failed to load page";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 
 const handleInputsUpdate = (newInputs: Record<string, unknown>) => {
-  inputs.value = newInputs
-}
+  inputs.value = newInputs;
+};
 
 const parseTags = (tagsString: string): string[] => {
   return tagsString
-    .split(',')
-    .map(tag => tag.trim())
-    .filter(tag => tag.length > 0)
-}
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter((tag) => tag.length > 0);
+};
 
 const isValid = computed(() => {
-  if (!title.value.trim()) return false
-  
+  if (!title.value.trim()) return false;
+
   // Validate based on entry type
   switch (entryType.value) {
-    case 'database_query':
-      return !!(inputs.value.connection_string && inputs.value.query)
-    case 'graphql':
-      return !!(inputs.value.url && inputs.value.query)
-    case 'api_call':
-      return !!(inputs.value.url)
-    case 'custom':
+    case "database_query":
+      return !!(inputs.value.connection_string && inputs.value.query);
+    case "graphql":
+      return !!(inputs.value.url && inputs.value.query);
+    case "api_call":
+      return !!inputs.value.url;
+    case "custom":
     default:
-      return true
+      return true;
   }
-})
+});
 
 const submitEntry = async () => {
-  if (!isValid.value) return
+  if (!isValid.value) return;
 
-  submitting.value = true
-  error.value = ''
+  submitting.value = true;
+  error.value = "";
 
   try {
     await entriesApi.create(notebooksStore.workspacePath, pageId.value, {
@@ -110,21 +130,21 @@ const submitEntry = async () => {
       title: title.value,
       inputs: inputs.value,
       tags: parseTags(tags.value),
-    })
+    });
 
     // Navigate back to page detail
-    router.push(`/notebooks/${notebookId.value}/pages/${pageId.value}`)
+    router.push(`/notebooks/${notebookId.value}/pages/${pageId.value}`);
   } catch (e) {
-    console.error('Failed to create entry:', e)
-    error.value = e instanceof Error ? e.message : 'Failed to create entry'
+    console.error("Failed to create entry:", e);
+    error.value = e instanceof Error ? e.message : "Failed to create entry";
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
-}
+};
 
 const cancel = () => {
-  router.push(`/notebooks/${notebookId.value}/pages/${pageId.value}`)
-}
+  router.push(`/notebooks/${notebookId.value}/pages/${pageId.value}`);
+};
 </script>
 
 <template>
@@ -133,9 +153,13 @@ const cancel = () => {
       <div class="breadcrumb">
         <RouterLink to="/notebooks">Notebooks</RouterLink>
         <span>/</span>
-        <RouterLink :to="`/notebooks/${notebookId}`">{{ notebook?.title }}</RouterLink>
+        <RouterLink :to="`/notebooks/${notebookId}`">{{
+          notebook?.title
+        }}</RouterLink>
         <span>/</span>
-        <RouterLink :to="`/notebooks/${notebookId}/pages/${pageId}`">{{ page.title }}</RouterLink>
+        <RouterLink :to="`/notebooks/${notebookId}/pages/${pageId}`">{{
+          page.title
+        }}</RouterLink>
         <span>/</span>
         <span>New Entry</span>
       </div>
@@ -214,7 +238,7 @@ const cancel = () => {
           class="btn btn-primary"
           :disabled="!isValid || submitting"
         >
-          {{ submitting ? 'Creating...' : 'Create Entry' }}
+          {{ submitting ? "Creating..." : "Create Entry" }}
         </button>
       </div>
     </form>

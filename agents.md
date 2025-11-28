@@ -141,10 +141,13 @@ class LabNotebookAgent(ABC):
         pass
 ```
 
-### 2. Register with the System
+### 2. Register with the System (Planned)
 
 ```python
-from labnotebook.agents import AgentRegistry
+# Note: AgentRegistry is planned but not yet implemented
+# This shows the intended future API
+
+from labnotebook.agents import AgentRegistry  # Future module
 
 @AgentRegistry.register("my_agent")
 class MyCustomAgent(LabNotebookAgent):
@@ -203,5 +206,3 @@ To contribute agent implementations:
 2. Create an agent in `labnotebook/agents/`
 3. Add tests in `tests/test_agents/`
 4. Submit a pull request with documentation
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.

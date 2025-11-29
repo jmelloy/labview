@@ -57,11 +57,14 @@ class APICallIntegration(IntegrationBase):
 
         # Handle base_url - prepend to relative URLs
         base_url = merged.get("base_url", "")
-        if base_url and not url.startswith(("http://", "https://")):
-            # Remove trailing slash from base_url and leading slash from url
-            base_url = base_url.rstrip("/")
-            url = url.lstrip("/")
-            url = f"{base_url}/{url}"
+        if base_url and not url.startswith(("http://", "https://", "ftp://", "file://")):
+            # Use urllib for proper URL joining
+            from urllib.parse import urljoin
+
+            # Ensure base_url ends with / for proper joining
+            if not base_url.endswith("/"):
+                base_url = base_url + "/"
+            url = urljoin(base_url, url.lstrip("/"))
 
         start_time = time.time()
 

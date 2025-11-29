@@ -5,7 +5,9 @@ import pytest
 from codex.db.models import (
     Artifact,
     Entry,
+    EntryLineage,
     Notebook,
+    NotebookTag,
     Page,
     Tag,
     get_session,
@@ -415,3 +417,125 @@ class TestTagModel:
 
         assert result is not None
         assert result.name == "get-tag"
+
+
+class TestCompositePrimaryKey:
+    """Tests for models with composite primary keys."""
+
+    def test_get_by_id_with_composite_key(self, db_session):
+        """get_by_id should work with composite primary keys."""
+        # Create prerequisite data
+        Notebook.create(
+            db_session, validate_fk=False, id="nb-comp-1", title="Notebook"
+        )
+        Tag.create(db_session, validate_fk=False, name="comp-tag")
+        db_session.commit()
+
+        # Get the tag id (auto-generated)
+        tag = Tag.find_one_by(db_session, name="comp-tag")
+
+        # Create NotebookTag with composite PK
+        NotebookTag.create(
+            db_session,
+            validate_fk=False,
+            notebook_id="nb-comp-1",
+            tag_id=tag.id,
+        )
+        db_session.commit()
+
+        # Retrieve using composite key as tuple
+        result = NotebookTag.get_by_id(db_session, ("nb-comp-1", tag.id))
+
+        assert result is not None
+        assert result.notebook_id == "nb-comp-1"
+        assert result.tag_id == tag.id
+
+    def test_get_by_id_composite_key_requires_tuple(self, db_session):
+        """get_by_id should raise ValueError if composite key is not a tuple."""
+        with pytest.raises(ValueError) as exc_info:
+            NotebookTag.get_by_id(db_session, "single-value")
+
+        assert "composite primary key" in str(exc_info.value)
+        assert "tuple/list" in str(exc_info.value)
+
+    def test_get_by_id_composite_key_wrong_length(self, db_session):
+        """get_by_id should raise ValueError if tuple length doesn't match PK columns."""
+        with pytest.raises(ValueError) as exc_info:
+            NotebookTag.get_by_id(db_session, ("only-one",))
+
+        assert "2 primary key columns" in str(exc_info.value)
+        assert "1 values were provided" in str(exc_info.value)
+
+    def test_delete_by_id_with_composite_key(self, db_session):
+        """delete_by_id should work with composite primary keys."""
+        # Create prerequisite data
+        Notebook.create(
+            db_session, validate_fk=False, id="nb-del-comp", title="Notebook"
+        )
+        Tag.create(db_session, validate_fk=False, name="del-comp-tag")
+        db_session.commit()
+
+        tag = Tag.find_one_by(db_session, name="del-comp-tag")
+
+        NotebookTag.create(
+            db_session,
+            validate_fk=False,
+            notebook_id="nb-del-comp",
+            tag_id=tag.id,
+        )
+        db_session.commit()
+
+        # Delete using composite key
+        result = NotebookTag.delete_by_id(db_session, ("nb-del-comp", tag.id))
+        db_session.commit()
+
+        assert result is True
+        assert NotebookTag.get_by_id(db_session, ("nb-del-comp", tag.id)) is None
+
+    def test_entry_lineage_composite_key(self, db_session):
+        """EntryLineage should work with composite primary key operations."""
+        # Create prerequisite data
+        Notebook.create(
+            db_session, validate_fk=False, id="nb-lineage", title="Notebook"
+        )
+        Page.create(
+            db_session,
+            validate_fk=False,
+            id="page-lineage",
+            notebook_id="nb-lineage",
+            title="Page",
+        )
+        Entry.create(
+            db_session,
+            validate_fk=False,
+            id="entry-parent",
+            page_id="page-lineage",
+            entry_type="custom",
+            title="Parent",
+            inputs="{}",
+        )
+        Entry.create(
+            db_session,
+            validate_fk=False,
+            id="entry-child",
+            page_id="page-lineage",
+            entry_type="custom",
+            title="Child",
+            inputs="{}",
+        )
+        db_session.commit()
+
+        # Create lineage with composite PK
+        EntryLineage.create(
+            db_session,
+            validate_fk=False,
+            parent_id="entry-parent",
+            child_id="entry-child",
+            relationship_type="derives_from",
+        )
+        db_session.commit()
+
+        # Retrieve and verify
+        result = EntryLineage.get_by_id(db_session, ("entry-parent", "entry-child"))
+        assert result is not None
+        assert result.relationship_type == "derives_from"

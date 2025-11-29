@@ -114,15 +114,35 @@ class Base(DeclarativeBase):
 
         Args:
             session: SQLAlchemy session
-            id_value: The primary key value
+            id_value: The primary key value (for single PK) or tuple of values (for composite PK)
 
         Returns:
             The instance if found, None otherwise
+
+        Raises:
+            ValueError: If id_value format doesn't match the primary key structure
         """
         mapper = inspect(cls)
         pk_columns = mapper.primary_key
+
         if len(pk_columns) == 1:
             return session.query(cls).filter(pk_columns[0] == id_value).first()
+        elif len(pk_columns) > 1:
+            # Composite primary key - id_value should be a tuple
+            if not isinstance(id_value, (tuple, list)):
+                raise ValueError(
+                    f"{cls.__name__} has a composite primary key with {len(pk_columns)} columns. "
+                    f"id_value must be a tuple/list of values, got {type(id_value).__name__}"
+                )
+            if len(id_value) != len(pk_columns):
+                raise ValueError(
+                    f"{cls.__name__} has {len(pk_columns)} primary key columns, "
+                    f"but {len(id_value)} values were provided"
+                )
+            query = session.query(cls)
+            for pk_col, val in zip(pk_columns, id_value):
+                query = query.filter(pk_col == val)
+            return query.first()
         return None
 
     @classmethod
@@ -210,10 +230,13 @@ class Base(DeclarativeBase):
 
         Args:
             session: SQLAlchemy session
-            id_value: The primary key value
+            id_value: The primary key value (for single PK) or tuple of values (for composite PK)
 
         Returns:
             True if found and deleted, False otherwise
+
+        Raises:
+            ValueError: If id_value format doesn't match the primary key structure
         """
         instance = cls.get_by_id(session, id_value)
         if instance:

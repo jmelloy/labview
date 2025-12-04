@@ -1,12 +1,14 @@
 """Tests for database query and GraphQL integrations."""
 
 import json
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from codex.core.workspace import Workspace
 from codex.integrations import IntegrationRegistry
 from codex.integrations.api_call import APICallIntegration
+from codex.integrations.comfyui import ComfyUIClient, ComfyUIIntegration
 from codex.integrations.database_query import DatabaseQueryIntegration
 from codex.integrations.graphql import GraphQLIntegration
 
@@ -32,6 +34,12 @@ class TestIntegrationRegistry:
         cls = IntegrationRegistry.get("api_call")
         assert cls == APICallIntegration
 
+    def test_comfyui_registered(self):
+        """Test comfyui integration is registered."""
+        assert IntegrationRegistry.has_integration("comfyui")
+        cls = IntegrationRegistry.get("comfyui")
+        assert cls == ComfyUIIntegration
+
     def test_list_integrations(self):
         """Test listing all integrations."""
         integrations = IntegrationRegistry.list_integrations()
@@ -39,6 +47,7 @@ class TestIntegrationRegistry:
         assert "graphql" in integrations
         assert "custom" in integrations
         assert "api_call" in integrations
+        assert "comfyui" in integrations
 
 
 class TestDatabaseQueryIntegration:
@@ -673,3 +682,420 @@ class TestIntegrationDefaultVariables:
 
         assert entry.status == "completed"
         assert entry.outputs["row_count"] == 1
+
+
+class TestComfyUIIntegration:
+    """Tests for ComfyUIIntegration."""
+
+    @pytest.fixture
+    def workspace(self, tmp_path):
+        """Create a test workspace."""
+        return Workspace.initialize(tmp_path, "Test Workspace")
+
+    @pytest.fixture
+    def integration(self, workspace):
+        """Create integration instance."""
+        return ComfyUIIntegration(workspace)
+
+    def test_validate_inputs_valid(self, integration):
+        """Test input validation with valid inputs."""
+        inputs = {
+            "workflow": {"1": {"class_type": "CheckpointLoaderSimple"}},
+        }
+        assert integration.validate_inputs(inputs) is True
+
+    def test_validate_inputs_missing_workflow(self, integration):
+        """Test input validation with missing workflow."""
+        inputs = {}
+        assert integration.validate_inputs(inputs) is False
+
+    def test_validate_inputs_invalid_workflow_type(self, integration):
+        """Test input validation with non-dict workflow."""
+        inputs = {
+            "workflow": "not a dict",
+        }
+        assert integration.validate_inputs(inputs) is False
+
+    def test_validate_inputs_with_optional_params(self, integration):
+        """Test input validation with optional parameters."""
+        inputs = {
+            "workflow": {"1": {"class_type": "CheckpointLoaderSimple"}},
+            "timeout": 600,
+            "poll_interval": 2.0,
+        }
+        assert integration.validate_inputs(inputs) is True
+
+    @pytest.mark.asyncio
+    async def test_execute_successful_workflow(self, integration):
+        """Test executing a workflow successfully."""
+        workflow = {
+            "1": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {"ckpt_name": "model.safetensors"},
+            }
+        }
+
+        # Mock the ComfyUIClient
+        with patch(
+            "codex.integrations.comfyui.ComfyUIClient"
+        ) as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value = mock_client
+
+            # Mock queue_prompt
+            mock_client.queue_prompt = AsyncMock(return_value="test-prompt-123")
+
+            # Mock wait_for_completion
+            mock_client.wait_for_completion = AsyncMock(
+                return_value={
+                    "outputs": {
+                        "9": {
+                            "images": [
+                                {
+                                    "filename": "output_00001_.png",
+                                    "subfolder": "",
+                                    "type": "output",
+                                }
+                            ]
+                        }
+                    }
+                }
+            )
+
+            # Mock download_image
+            mock_client.download_image = AsyncMock(
+                return_value=b"fake-image-data"
+            )
+
+            inputs = {"workflow": workflow}
+            result = await integration.execute(inputs)
+
+            assert "outputs" in result
+            assert "artifacts" in result
+
+            outputs = result["outputs"]
+            assert outputs["prompt_id"] == "test-prompt-123"
+            assert "execution_time" in outputs
+            assert outputs["num_images"] == 1
+
+            artifacts = result["artifacts"]
+            assert len(artifacts) == 1
+            assert artifacts[0]["type"] == "image/png"
+            assert artifacts[0]["data"] == b"fake-image-data"
+            assert artifacts[0]["metadata"]["filename"] == "output_00001_.png"
+            assert artifacts[0]["metadata"]["node_id"] == "9"
+
+    @pytest.mark.asyncio
+    async def test_execute_with_multiple_images(self, integration):
+        """Test executing workflow that generates multiple images."""
+        workflow = {"1": {"class_type": "KSampler"}}
+
+        with patch(
+            "codex.integrations.comfyui.ComfyUIClient"
+        ) as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value = mock_client
+
+            mock_client.queue_prompt = AsyncMock(return_value="test-prompt-456")
+            mock_client.wait_for_completion = AsyncMock(
+                return_value={
+                    "outputs": {
+                        "9": {
+                            "images": [
+                                {"filename": "img1.png", "subfolder": ""},
+                                {"filename": "img2.png", "subfolder": "batch"},
+                            ]
+                        },
+                        "10": {
+                            "images": [
+                                {"filename": "img3.jpg", "subfolder": ""},
+                            ]
+                        },
+                    }
+                }
+            )
+            mock_client.download_image = AsyncMock(
+                return_value=b"image-data"
+            )
+
+            result = await integration.execute({"workflow": workflow})
+
+            assert result["outputs"]["num_images"] == 3
+            assert len(result["artifacts"]) == 3
+
+            # Check MIME types
+            assert result["artifacts"][0]["type"] == "image/png"
+            assert result["artifacts"][1]["type"] == "image/png"
+            assert result["artifacts"][2]["type"] == "image/jpeg"
+
+    @pytest.mark.asyncio
+    async def test_execute_with_custom_server_url(self, integration):
+        """Test executing with custom server URL."""
+        workflow = {"1": {"class_type": "CheckpointLoaderSimple"}}
+
+        with patch(
+            "codex.integrations.comfyui.ComfyUIClient"
+        ) as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value = mock_client
+
+            mock_client.queue_prompt = AsyncMock(return_value="test-prompt-789")
+            mock_client.wait_for_completion = AsyncMock(
+                return_value={"outputs": {}}
+            )
+
+            inputs = {
+                "workflow": workflow,
+                "server_url": "http://custom-server:8188",
+            }
+            await integration.execute(inputs)
+
+            # Verify client was created with custom URL
+            mock_client_class.assert_called_once_with("http://custom-server:8188")
+
+    @pytest.mark.asyncio
+    async def test_execute_timeout_error(self, integration):
+        """Test handling of timeout errors."""
+        workflow = {"1": {"class_type": "KSampler"}}
+
+        with patch(
+            "codex.integrations.comfyui.ComfyUIClient"
+        ) as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value = mock_client
+
+            mock_client.queue_prompt = AsyncMock(return_value="test-timeout")
+            mock_client.wait_for_completion = AsyncMock(
+                side_effect=TimeoutError("Workflow execution timed out")
+            )
+
+            result = await integration.execute({"workflow": workflow})
+
+            assert "error" in result["outputs"]
+            assert "timed out" in result["outputs"]["error"].lower()
+            assert len(result["artifacts"]) == 0
+
+    @pytest.mark.asyncio
+    async def test_execute_connection_error(self, integration):
+        """Test handling of connection errors."""
+        workflow = {"1": {"class_type": "KSampler"}}
+
+        with patch(
+            "codex.integrations.comfyui.ComfyUIClient"
+        ) as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value = mock_client
+
+            mock_client.queue_prompt = AsyncMock(
+                side_effect=Exception("Connection refused")
+            )
+
+            result = await integration.execute({"workflow": workflow})
+
+            assert "error" in result["outputs"]
+            assert "Connection refused" in result["outputs"]["error"]
+
+    @pytest.mark.asyncio
+    async def test_entry_with_comfyui(self, workspace):
+        """Test creating an entry with comfyui type."""
+        nb = workspace.create_notebook("Test Notebook")
+        page = nb.create_page("Test Page")
+
+        workflow = {
+            "3": {
+                "class_type": "CheckpointLoaderSimple",
+                "inputs": {"ckpt_name": "sd_xl_base_1.0.safetensors"},
+            }
+        }
+
+        entry = page.create_entry(
+            entry_type="comfyui",
+            title="Test ComfyUI Workflow",
+            inputs={
+                "workflow": workflow,
+                "timeout": 600,
+            },
+        )
+
+        assert entry.entry_type == "comfyui"
+        assert entry.inputs["workflow"] == workflow
+        assert entry.inputs["timeout"] == 600
+
+
+class TestComfyUIClient:
+    """Tests for ComfyUIClient."""
+
+    @pytest.mark.asyncio
+    async def test_queue_prompt(self):
+        """Test queuing a prompt."""
+        client = ComfyUIClient("http://test-server:8188")
+        workflow = {"1": {"class_type": "LoadImage"}}
+
+        with patch("aiohttp.ClientSession") as mock_session_class:
+            mock_session = MagicMock()
+            mock_session_class.return_value.__aenter__.return_value = (
+                mock_session
+            )
+
+            mock_response = MagicMock()
+            mock_response.json = AsyncMock(
+                return_value={"prompt_id": "abc123"}
+            )
+            mock_response.raise_for_status = MagicMock()
+
+            mock_session.post.return_value.__aenter__.return_value = (
+                mock_response
+            )
+
+            prompt_id = await client.queue_prompt(workflow)
+
+            assert prompt_id == "abc123"
+            mock_session.post.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_get_history(self):
+        """Test getting workflow history."""
+        client = ComfyUIClient("http://test-server:8188")
+
+        with patch("aiohttp.ClientSession") as mock_session_class:
+            mock_session = MagicMock()
+            mock_session_class.return_value.__aenter__.return_value = (
+                mock_session
+            )
+
+            mock_response = MagicMock()
+            mock_response.json = AsyncMock(
+                return_value={"prompt-123": {"outputs": {}}}
+            )
+            mock_response.raise_for_status = MagicMock()
+
+            mock_session.get.return_value.__aenter__.return_value = (
+                mock_response
+            )
+
+            history = await client.get_history("prompt-123")
+
+            assert "outputs" in history
+            assert mock_session.get.call_count == 1
+
+    @pytest.mark.asyncio
+    async def test_download_image(self):
+        """Test downloading an image."""
+        client = ComfyUIClient("http://test-server:8188")
+
+        with patch("aiohttp.ClientSession") as mock_session_class:
+            mock_session = MagicMock()
+            mock_session_class.return_value.__aenter__.return_value = (
+                mock_session
+            )
+
+            mock_response = MagicMock()
+            mock_response.read = AsyncMock(return_value=b"image-bytes")
+            mock_response.raise_for_status = MagicMock()
+
+            mock_session.get.return_value.__aenter__.return_value = (
+                mock_response
+            )
+
+            image_data = await client.download_image("test.png")
+
+            assert image_data == b"image-bytes"
+
+
+class TestComfyUIIntegrationVariables:
+    """Tests for ComfyUI integration default variables."""
+
+    @pytest.fixture
+    def workspace(self, tmp_path):
+        """Create a test workspace."""
+        return Workspace.initialize(tmp_path, "Test Workspace")
+
+    def test_comfyui_merge_with_defaults(self, workspace):
+        """Test ComfyUI integration merges inputs with defaults."""
+        # Set default server URL
+        workspace.db_manager.set_integration_variable(
+            integration_type="comfyui",
+            name="server_url",
+            value="http://custom-comfy:8188",
+        )
+
+        integration = ComfyUIIntegration(workspace)
+
+        # Entry only provides workflow
+        inputs = {"workflow": {"1": {"class_type": "KSampler"}}}
+        merged = integration.merge_inputs_with_defaults(inputs)
+
+        assert merged["server_url"] == "http://custom-comfy:8188"
+        assert merged["workflow"] == {"1": {"class_type": "KSampler"}}
+
+    def test_comfyui_input_overrides_default(self, workspace):
+        """Test that entry inputs override defaults."""
+        workspace.db_manager.set_integration_variable(
+            integration_type="comfyui",
+            name="server_url",
+            value="http://default-server:8188",
+        )
+
+        integration = ComfyUIIntegration(workspace)
+
+        # Entry overrides default server URL
+        inputs = {
+            "workflow": {"1": {"class_type": "KSampler"}},
+            "server_url": "http://override-server:8188",
+        }
+        merged = integration.merge_inputs_with_defaults(inputs)
+
+        assert merged["server_url"] == "http://override-server:8188"
+
+    @pytest.mark.asyncio
+    async def test_comfyui_validate_with_defaults(self, workspace):
+        """Test ComfyUI validation works with defaults."""
+        workspace.db_manager.set_integration_variable(
+            integration_type="comfyui",
+            name="server_url",
+            value="http://default-server:8188",
+        )
+
+        integration = ComfyUIIntegration(workspace)
+
+        # Entry only provides workflow
+        inputs = {"workflow": {"1": {"class_type": "KSampler"}}}
+        assert integration.validate_inputs(inputs) is True
+
+    @pytest.mark.asyncio
+    async def test_entry_with_default_server_url(self, workspace):
+        """Test creating and executing entry with default server URL."""
+        # Set default server URL
+        workspace.db_manager.set_integration_variable(
+            integration_type="comfyui",
+            name="server_url",
+            value="http://test-server:8188",
+        )
+
+        nb = workspace.create_notebook("Test Notebook")
+        page = nb.create_page("Test Page")
+
+        # Create entry without server_url - it should use the default
+        entry = page.create_entry(
+            entry_type="comfyui",
+            title="Test Workflow",
+            inputs={"workflow": {"1": {"class_type": "LoadImage"}}},
+        )
+
+        # Mock execution
+        with patch(
+            "codex.integrations.comfyui.ComfyUIClient"
+        ) as mock_client_class:
+            mock_client = MagicMock()
+            mock_client_class.return_value = mock_client
+
+            mock_client.queue_prompt = AsyncMock(return_value="test-prompt")
+            mock_client.wait_for_completion = AsyncMock(
+                return_value={"outputs": {}}
+            )
+
+            await entry.execute()
+
+            # Verify client was created with default URL
+            mock_client_class.assert_called_once_with("http://test-server:8188")
+            assert entry.status == "completed"

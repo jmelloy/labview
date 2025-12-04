@@ -157,13 +157,15 @@ class ComfyUIIntegration(IntegrationBase):
 
     Inputs:
         workflow: ComfyUI workflow dictionary (required)
+        server_url: Base URL of ComfyUI server (optional, overrides default)
         timeout: Maximum execution time in seconds (optional, default: 300)
         poll_interval: Status check interval in seconds (optional, default: 1.0)
 
     Outputs:
         prompt_id: ComfyUI prompt ID
-        execution_time: Time taken to execute workflow
+        execution_time: Time taken to execute workflow in seconds
         node_outputs: Dictionary of outputs from each node
+        num_images: Number of images generated
     """
 
     integration_type = "comfyui"

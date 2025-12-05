@@ -291,6 +291,7 @@ class CodexAgent(ABC):
 
 ```python
 from typing import Type, Dict
+from datetime import datetime
 
 class AgentRegistry:
     """Central registry for Codex agents."""
@@ -375,6 +376,7 @@ entry.save()
 ### Example 2: Periodic Notebook Summarization
 
 ```python
+from datetime import datetime
 from codex.core.workspace import Workspace
 from my_agents import DocumentationAgent
 import schedule

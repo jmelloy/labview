@@ -1,53 +1,195 @@
-# Codex - Digital Laboratory Journal Architecture
+# Codex - Digital Laboratory Journal
 
-**Status**: Draft  
-**Author**: Engineering Team  
-**Created**: 2024-11-27  
-**Last Updated**: 2025-11-28
+**Status**: Active Development  
+**Version**: 0.1.0  
+**Last Updated**: 2024-12-05
+
+> A hierarchical digital laboratory journal system for tracking computational experiments, creative iterations, and technical investigations with full provenance and reproducibility.
+
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Implementation Status](#implementation-status)
+- [What's Next](#whats-next)
+- [Abstract & Motivation](#abstract)
+- [Architecture Documentation](#2-conceptual-model)
+  - [Conceptual Model](#2-conceptual-model)
+  - [Data Model](#3-data-model)
+  - [Backend Architecture](#4-backend-architecture-python)
+  - [API Endpoints](#5-api-endpoints-fastapi)
+  - [Frontend Architecture](#6-frontend-architecture-vuejs)
+- [Usage Examples](#7-cli-usage)
+  - [CLI Usage](#7-cli-usage)
+  - [Python SDK Usage](#8-python-sdk-usage)
+- [Key Features Summary](#9-key-features-summary)
+- [Contributing](#contributing)
+- [Resources](#resources)
+
+## Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/jmelloy/codex.git
+cd codex
+
+# Install Python dependencies
+pip install -e ".[dev]"
+
+# Initialize a workspace
+codex init ~/my-lab --name "My Laboratory"
+
+# Start the API server
+uvicorn codex.api.main:app --reload --port 8765
+
+# Build and serve the frontend (optional)
+cd frontend
+npm install
+npm run dev
+```
+
+### Basic Usage
+
+```bash
+# Create a notebook
+codex notebook create "AI Experiments" --description "Machine learning experiments"
+
+# Create a page
+codex page create "Initial Tests" --notebook "AI Experiments"
+
+# Search entries
+codex search --query "experiment"
+```
 
 ## Implementation Status
 
-### ✅ Completed Features
+### ✅ Core Features (Implemented)
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Core Classes** | ✅ Complete | Workspace, Notebook, Page, Entry implemented |
-| **SQLite Database** | ✅ Complete | SQLAlchemy ORM with full schema |
-| **Git Integration** | ✅ Complete | Version control for structure via GitPython |
-| **CLI** | ✅ Complete | Full command-line interface (init, notebook, page, entry, search, lineage, serve) |
-| **REST API** | ✅ Complete | FastAPI endpoints for all entities |
-| **Content-Addressable Storage** | ✅ Complete | SHA256 hashing, blob storage, thumbnails |
-| **Lineage Tracking** | ✅ Complete | Parent-child relationships, ancestors/descendants |
-| **Entry Variations** | ✅ Complete | Create variations with input overrides |
-| **Tagging System** | ✅ Complete | Tags for notebooks, pages, and entries |
-| **Integration Registry** | ✅ Complete | Plugin system for entry types |
-| **Custom Integration** | ✅ Complete | Manual entry type |
-| **API Call Integration** | ✅ Complete | HTTP request tracking |
-| **Database Query Integration** | ✅ Complete | SQL query execution with SQLAlchemy |
-| **GraphQL Integration** | ✅ Complete | GraphQL API queries and mutations |
+| Component | Status | Description |
+|-----------|--------|-------------|
+| **Core Architecture** | ✅ | Workspace → Notebook → Page → Entry hierarchy |
+| **SQLite Database** | ✅ | SQLAlchemy ORM with Alembic migrations |
+| **REST API** | ✅ | FastAPI with endpoints for all entities |
+| **CLI** | ✅ | Command-line interface for management |
+| **Content Storage** | ✅ | SHA256-based content-addressable storage |
+| **Lineage Tracking** | ✅ | Parent-child relationships and variations |
+| **Tagging System** | ✅ | Tags for notebooks, pages, and entries |
 
-### 🚧 Partial / Planned Features
+### ✅ Integrations (Implemented)
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **WebSocket Execution** | 🚧 Planned | Directory structure exists, implementation pending |
-| **Full-Text Search (FTS)** | 🚧 Planned | Basic search works, FTS5 not yet implemented |
-| **Smart Archival** | 🚧 Planned | Settings exist, policies not enforced |
+| Integration | Status | Description |
+|-------------|--------|-------------|
+| **API Call** | ✅ | Track HTTP requests and responses |
+| **Database Query** | ✅ | Execute and log SQL queries |
+| **GraphQL** | ✅ | GraphQL queries and mutations |
+| **ComfyUI** | ✅ | UI form and standalone page (backend integration in progress) |
+| **Custom/Text** | ✅ | Manual text entries |
 
-### 🚧 In Development
+### 🚧 In Progress
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **Frontend (Vue.js)** | 🚧 In Progress | Web UI with views for notebooks, pages, and search |
+| Feature | Status | Next Steps |
+|---------|--------|-----------|
+| **Frontend** | 🚧 | Vue.js UI with notebook/page/entry views |
+| **ComfyUI Execution** | 🚧 | Backend workflow execution integration |
+| **Search** | 🚧 | Basic search works, full-text search (FTS5) pending |
 
-### ❌ Not Yet Implemented
+### 📋 Planned Features
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| **ComfyUI Integration** | 🚧 In Progress | Standalone page and form completed, workflow execution backend ready |
-| **Jupyter Integration** | ❌ Not Started | Notebook cell execution pending |
-| **AI-Powered Insights** | ❌ Not Started | Summarization, pattern detection pending |
-| **Export/Import** | ❌ Not Started | Notebook export functionality pending |
+| Feature | Priority | Description |
+|---------|----------|-------------|
+| **Full-Text Search** | High | FTS5 implementation for advanced search |
+| **WebSocket Execution** | High | Real-time entry execution updates |
+| **Smart Archival** | Medium | Automated retention policies |
+| **Jupyter Integration** | Medium | Execute and track Jupyter notebooks |
+| **Export/Import** | Medium | Notebook export/import functionality |
+| **AI Insights** | Low | Automated summarization and pattern detection |
+
+---
+
+## What's Next
+
+### 🎯 Immediate Priorities (Next 1-2 Months)
+
+1. **Complete ComfyUI Integration**
+   - Finish backend workflow execution
+   - Add real-time progress tracking
+   - Implement artifact storage for generated images
+
+2. **Enhance Search Capabilities**
+   - Implement FTS5 full-text search
+   - Add filtering by date ranges, tags, and entry types
+   - Create advanced search UI in frontend
+
+3. **WebSocket Implementation**
+   - Real-time entry execution updates
+   - Live progress bars and status notifications
+   - Streaming logs and output
+
+4. **Frontend Polish**
+   - Complete all CRUD operations in UI
+   - Add entry detail view with artifact gallery
+   - Implement lineage visualization graph
+   - Improve responsive design
+
+### 🚀 Medium-Term Goals (3-6 Months)
+
+1. **Jupyter Notebook Integration**
+   - Execute Jupyter notebooks as entries
+   - Track cell-level execution
+   - Store notebook outputs as artifacts
+
+2. **Export/Import System**
+   - Export notebooks to ZIP archives
+   - Import from external sources
+   - Share experiments between workspaces
+
+3. **Smart Archival System**
+   - Implement retention policies
+   - Automated compression strategies
+   - Thumbnail generation for old artifacts
+
+4. **Collaboration Features**
+   - Multi-user support
+   - Entry comments and discussions
+   - Shared notebooks
+
+### 🌟 Long-Term Vision (6+ Months)
+
+1. **AI-Powered Insights**
+   - Automated page summarization
+   - Pattern detection across experiments
+   - Next-step recommendations
+   - Success prediction for configurations
+
+2. **Advanced Lineage**
+   - Visual lineage graph explorer
+   - Diff view between variations
+   - Automatic parameter sweep tracking
+
+3. **Integration Ecosystem**
+   - Plugin marketplace
+   - Third-party integration SDK
+   - Pre-built integrations for popular tools
+
+4. **Enterprise Features**
+   - Team workspaces
+   - Access control and permissions
+   - Audit logging
+   - Cloud deployment options
+
+### 🐛 Known Issues & TODOs
+
+- [ ] Add comprehensive error handling in API endpoints
+- [ ] Improve test coverage (currently ~60%, target 90%)
+- [ ] Add database migration rollback support
+- [ ] Implement proper logging throughout application
+- [ ] Add rate limiting to API endpoints
+- [ ] Create user documentation and tutorials
+- [ ] Set up CI/CD pipeline
+- [ ] Add Docker Compose for easy deployment
+- [ ] Implement artifact thumbnail generation
+- [ ] Add API authentication and authorization
 
 ---
 
@@ -1980,16 +2122,60 @@ print(f"Descendants: {len(lineage['descendants'])}")
 - ComfyUI workflows
 - API calls
 - Database queries
+- GraphQL operations
 - Custom integrations via plugin system
 
-### Real-Time Execution
+### Real-Time Execution (Planned)
 - WebSocket-based progress updates
 - Streaming logs
 - Live artifact generation
 
-### AI-Powered Insights
+### AI-Powered Insights (Planned)
 - Summarization of pages/notebooks
 - Pattern detection across entries
 - Recommendation of next experiments
+- See [agents.md](agents.md) for details
+
+---
+
+## Contributing
+
+Contributions are welcome! Please see our contribution guidelines:
+
+1. **Code Contributions**
+   - Fork the repository
+   - Create a feature branch
+   - Add tests for new features
+   - Submit a pull request
+
+2. **Integration Development**
+   - Implement the `IntegrationBase` interface
+   - Add comprehensive tests
+   - Document usage examples
+   - See integration examples in [codex/integrations/](codex/integrations/)
+
+3. **Agent Development**
+   - See [agents.md](agents.md) for agent architecture (planned)
+   - Follow the `CodexAgent` base class pattern
+   - Include example usage
+   - Document security considerations
+
+4. **Documentation**
+   - Improve existing docs
+   - Add tutorials and examples
+   - Fix typos and clarifications
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Resources
+
+- **GitHub**: [github.com/jmelloy/codex](https://github.com/jmelloy/codex)
+- **API Documentation**: `http://localhost:8765/docs` (when server is running)
+- **AI Agents**: [agents.md](agents.md)
+- **Issues & Feature Requests**: [GitHub Issues](https://github.com/jmelloy/codex/issues)
+
+---
 
 This architecture provides a robust foundation for a laboratory notebook system that scales from individual creative work to team-based engineering investigations.

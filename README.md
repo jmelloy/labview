@@ -6,6 +6,25 @@
 
 > A hierarchical digital laboratory journal system for tracking computational experiments, creative iterations, and technical investigations with full provenance and reproducibility.
 
+## Table of Contents
+
+- [Quick Start](#quick-start)
+- [Implementation Status](#implementation-status)
+- [What's Next](#whats-next)
+- [Abstract & Motivation](#abstract)
+- [Architecture Documentation](#2-conceptual-model)
+  - [Conceptual Model](#2-conceptual-model)
+  - [Data Model](#3-data-model)
+  - [Backend Architecture](#4-backend-architecture-python)
+  - [API Endpoints](#5-api-endpoints-fastapi)
+  - [Frontend Architecture](#6-frontend-architecture-vuejs)
+- [Usage Examples](#7-cli-usage)
+  - [CLI Usage](#7-cli-usage)
+  - [Python SDK Usage](#8-python-sdk-usage)
+- [Key Features Summary](#9-key-features-summary)
+- [Contributing](#contributing)
+- [Resources](#resources)
+
 ## Quick Start
 
 ### Installation
@@ -2103,16 +2122,60 @@ print(f"Descendants: {len(lineage['descendants'])}")
 - ComfyUI workflows
 - API calls
 - Database queries
+- GraphQL operations
 - Custom integrations via plugin system
 
-### Real-Time Execution
+### Real-Time Execution (Planned)
 - WebSocket-based progress updates
 - Streaming logs
 - Live artifact generation
 
-### AI-Powered Insights
+### AI-Powered Insights (Planned)
 - Summarization of pages/notebooks
 - Pattern detection across entries
 - Recommendation of next experiments
+- See [agents.md](agents.md) for details
+
+---
+
+## Contributing
+
+Contributions are welcome! Please see our contribution guidelines:
+
+1. **Code Contributions**
+   - Fork the repository
+   - Create a feature branch
+   - Add tests for new features
+   - Submit a pull request
+
+2. **Integration Development**
+   - Implement the `IntegrationBase` interface
+   - Add comprehensive tests
+   - Document usage examples
+   - See [Integration Development Guide](https://github.com/jmelloy/codex/wiki/Integration-Development)
+
+3. **Agent Development**
+   - See [agents.md](agents.md) for agent architecture
+   - Follow the `CodexAgent` base class
+   - Include example usage
+   - Document security considerations
+
+4. **Documentation**
+   - Improve existing docs
+   - Add tutorials and examples
+   - Fix typos and clarifications
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Resources
+
+- **GitHub**: [github.com/jmelloy/codex](https://github.com/jmelloy/codex)
+- **API Documentation**: `http://localhost:8765/docs` (when server is running)
+- **AI Agents**: [agents.md](agents.md)
+- **Issues & Feature Requests**: [GitHub Issues](https://github.com/jmelloy/codex/issues)
+
+---
 
 This architecture provides a robust foundation for a laboratory notebook system that scales from individual creative work to team-based engineering investigations.

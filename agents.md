@@ -5,6 +5,25 @@
 
 This document describes the AI agent architecture and integration points for the Codex digital laboratory journal system.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Current Integration Points](#current-integration-points)
+  - [GitHub Copilot Integration](#1-github-copilot-integration)
+  - [API-Based Agents](#2-api-based-agents)
+  - [Python SDK Integration](#3-python-sdk-integration)
+- [Planned Agent Types](#planned-agent-types)
+  - [Documentation Agent](#1-documentation-agent)
+  - [Analysis Agent](#2-analysis-agent)
+  - [Recommendation Agent](#3-recommendation-agent)
+  - [Code Generation Agent](#4-code-generation-agent)
+- [Agent Architecture](#agent-architecture)
+- [Integration Examples](#integration-examples)
+- [Security & Best Practices](#security--best-practices)
+- [Roadmap & Future Development](#roadmap--future-development)
+- [Contributing](#contributing)
+- [FAQ](#faq)
+
 ## Overview
 
 Codex is designed to integrate with AI agents that enhance experiment tracking, analysis, and documentation. Agents can interact with the system through multiple interfaces: REST API, Python SDK, CLI, and (planned) WebSocket connections.
